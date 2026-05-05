@@ -305,8 +305,8 @@ let fd={};
 async function cargarFiltros(){
   try{const r=await api('/dashboard/filtros');if(r&&r.ok)fd=await r.json();}catch(e){}
 }
-function cOpts(){return(fd.centros||[]).map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('');}
-function sOpts(){return(fd.servicios||[]).map(s=>`<option value="${s}">${s}</option>`).join('');}
+function cOpts(){return [...(fd.centros||[])].sort((a,b)=>a.nombre.localeCompare(b.nombre,'es')).map(c=>`<option value="${c.id}">${c.nombre}</option>`).join('');}
+function sOpts(){return [...(fd.servicios||[])].sort((a,b)=>a.localeCompare(b,'es')).map(s=>`<option value="${s}">${s}</option>`).join('');}
 
 // ── VISTA: CONDUCTA ───────────────────────────────
 let analisisData=null;
@@ -476,7 +476,11 @@ function renderConducta(){
     </div>`;
 }
 
-function setEsc(e){escActivo=e;renderConducta();}
+function setEsc(e){escActivo=e;renderConducta();setTimeout(sortAllTables,50);}
+
+// Llamar sortAllTables después de render
+const _origRender=renderConducta;
+renderConducta=function(){_origRender();setTimeout(sortAllTables,100);};
 
 // ── UPLOADS ───────────────────────────────────────
 async function uploads(){
