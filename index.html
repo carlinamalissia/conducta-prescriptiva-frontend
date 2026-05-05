@@ -378,10 +378,15 @@ async function cargarConducta() {
     clearTimeout(timeout);
   } catch(err) {
     clearTimeout(timeout);
-    body.innerHTML = '<div class="emp"><div class="emp-i">⏱️</div><div class="emp-t">La consulta tardó demasiado</div><div class="emp-s">Probá con un período más corto (ej: 1 mes) o filtrando por centro o servicio</div></div>';
+    body.innerHTML = '<div class="emp"><div class="emp-i">❌</div><div class="emp-t">Error al conectar con el servidor</div><div class="emp-s">' + err.message + '</div></div>';
     return;
   }
-  if (!r || !r.ok) { showToast('Error cargando datos', 'e'); return; }
+  if (!r || !r.ok) {
+    var errBody = '';
+    try { var errJson = await r.json(); errBody = errJson.detail || JSON.stringify(errJson); } catch(e2) { errBody = 'HTTP ' + (r ? r.status : '?'); }
+    body.innerHTML = '<div class="emp"><div class="emp-i">❌</div><div class="emp-t">Error del servidor (HTTP ' + (r ? r.status : '?') + ')</div><div class="emp-s">' + errBody + '</div></div>';
+    return;
+  }
   analisisData = await r.json();
   if (analisisData.vacio) {
     body.innerHTML = '<div class="emp"><div class="emp-i">📭</div><div class="emp-t">Sin datos para el período</div><div class="emp-s">Cargá archivos de atenciones y prescripciones primero</div></div>';
