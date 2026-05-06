@@ -324,7 +324,7 @@ function nav(v) {
   var canMail = ['admin','directorio','gerente','operaciones_medicas'].indexOf(user.rol) >= 0;
   document.getElementById('btn-mail').style.display = (v === 'conducta' && canMail) ? 'flex' : 'none';
   var showKpi = analisisData && !analisisData.vacio;
-  document.getElementById('kpi-strip').style.display = ((v === 'conducta' || v === 'detalle') && showKpi) ? 'flex' : 'none';
+  document.getElementById('kpi-strip').style.display = (v === 'conducta' && showKpi) ? 'flex' : 'none';
   cargarFiltros().then(function() {
     if (v === 'conducta') conducta();
     else if (v === 'detalle') detalle();
@@ -510,22 +510,30 @@ function renderKpiChart() {
   var pcts   = evol.map(function(e) { return e.pct_con_presc; });
   var ratios = evol.map(function(e) { return e.ratio_pc; });
   if (kpiChart) { kpiChart.destroy(); kpiChart = null; }
+  var minPct = Math.max(0, Math.min.apply(null, pcts) - 5);
+  var maxPct = Math.min(100, Math.max.apply(null, pcts) + 5);
+  var minRat = Math.max(0, Math.min.apply(null, ratios) - 0.3);
+  var maxRat = Math.max.apply(null, ratios) + 0.3;
   kpiChart = new Chart(document.getElementById('kpi-chart'), {
     type: 'bar',
     data: {
       labels: labels,
       datasets: [
-        { type: 'bar',  label: '% Con Presc.', data: pcts,   backgroundColor: 'rgba(29,188,97,.65)', borderColor: '#1DBC61', borderWidth: 1, borderRadius: 3, yAxisID: 'y1', order: 2 },
-        { type: 'line', label: 'Ratio P/C',    data: ratios, borderColor: '#47B0FE', backgroundColor: 'transparent', tension: 0.35, pointRadius: 4, pointBackgroundColor: '#47B0FE', pointBorderColor: 'white', pointBorderWidth: 1.5, borderWidth: 2.5, yAxisID: 'y2', order: 1 }
+        { type: 'bar',  label: '% Con Presc.', data: pcts,   backgroundColor: 'rgba(29,188,97,.7)', borderColor: '#1DBC61', borderWidth: 1.5, borderRadius: 4, yAxisID: 'y1', order: 2 },
+        { type: 'line', label: 'Ratio P/C',    data: ratios, borderColor: '#181E42', backgroundColor: 'transparent', tension: 0.3, pointRadius: 5, pointBackgroundColor: '#47B0FE', pointBorderColor: '#181E42', pointBorderWidth: 1.5, borderWidth: 2, yAxisID: 'y2', order: 1 }
       ]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 10, padding: 6 } } },
+      plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 10, padding: 6 } },
+        tooltip: { callbacks: { label: function(ctx){ return ctx.dataset.label + ': ' + ctx.parsed.y + (ctx.datasetIndex===0?'%':''); } } } },
       scales: {
-        x:  { ticks: { font: { size: 9 } }, grid: { display: false } },
-        y1: { type: 'linear', position: 'left',  ticks: { font: { size: 9 }, callback: function(v){ return v + '%'; } }, min: 0, grid: { color: 'rgba(0,0,0,.05)' } },
-        y2: { type: 'linear', position: 'right', ticks: { font: { size: 9 } }, min: 0, grid: { drawOnChartArea: false } }
+        x: { ticks: { font: { size: 9 } }, grid: { display: false } },
+        y1: { type: 'linear', position: 'left', min: minPct, max: maxPct,
+              ticks: { font: { size: 9 }, callback: function(v){ return v+'%'; } },
+              grid: { color: 'rgba(0,0,0,.04)' } },
+        y2: { type: 'linear', position: 'right', min: minRat, max: maxRat,
+              ticks: { font: { size: 9 } }, grid: { drawOnChartArea: false } }
       }
     }
   });
@@ -578,7 +586,20 @@ function detalle() {
   var desdeVal = filtrosGlobales.desde || mesAct(-1);
   var hastaVal = filtrosGlobales.hasta || mesAct(0);
   var escNom = ['ESC 1: Completo','ESC 2: Sin PAMI','ESC 3: Sin PAMI ni Lab'][['esc1','esc2','esc3'].indexOf(escActivo)] || 'ESC 1: Completo';
-  pc.innerHTML = '<div class="buscar-box">'
+  // Banner de KPIs si hay datos cargados
+  var kpiBanner = '';
+  if (analisisData && !analisisData.vacio) {
+    var esc = analisisData.resumen[escActivo];
+    kpiBanner = '<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">'
+      + '<div class="kpi-s"><div class="kpi-sl">Consultas</div><div class="kpi-sv">'+fmt(esc.consultas)+'</div></div>'
+      + '<div class="kpi-s"><div class="kpi-sl">Con Presc.</div><div class="kpi-sv">'+fmt(esc.con_presc)+'</div><div class="kpi-ss">'+esc.sem_pct+' '+esc.pct_con_presc+'%</div></div>'
+      + '<div class="kpi-s"><div class="kpi-sl">Sin Presc.</div><div class="kpi-sv">'+fmt(esc.sin_presc)+'</div></div>'
+      + '<div class="kpi-s"><div class="kpi-sl">Total Presc.</div><div class="kpi-sv">'+fmt(esc.total_presc)+'</div></div>'
+      + '<div class="kpi-s"><div class="kpi-sl">Ratio P/C</div><div class="kpi-sv">'+esc.ratio_pc+'</div><div class="kpi-ss">'+esc.sem_ratio+'</div></div>'
+      + '<div class="kpi-s" style="flex:1;min-width:120px"><div class="kpi-sl">Escenario activo</div><div style="margin-top:4px"><span class="esc-badge">'+escNom+'</span></div></div>'
+      + '</div>';
+  }
+  pc.innerHTML = kpiBanner + '<div class="buscar-box">'
     + '<div class="fgr"><span class="fla">Desde</span><input type="month" id="d-desde" class="fin" value="' + desdeVal + '"></div>'
     + '<div class="fgr"><span class="fla">Hasta</span><input type="month" id="d-hasta" class="fin" value="' + hastaVal + '"></div>'
     + '<div class="fgr"><span class="fla">Centros</span><div class="ms-wrap" id="ms-dcentros"></div></div>'
@@ -741,7 +762,7 @@ async function auditoria() {
   var r = await apiFetch('/audit/?limit=100'); if (!r || !r.ok) return;
   var data = await r.json();
   var bm = { login:'bdv', upload:'bda', alta_usuario:'bdv', baja_usuario:'bdr', consulta_dashboard:'bdc', descarga:'bdp', envio_mail:'bda', delete_upload:'bdr' };
-  var rows = data.map(function(l) { return '<tr><td>' + (l.created_at ? new Date(l.created_at).toLocaleString('es-AR') : '—') + '</td><td>' + (l.usuario_id || '—') + '</td><td><span class="bd ' + (bm[l.accion] || 'bdc') + '">' + l.accion + '</span></td><td>' + (l.recurso || '—') + '</td><td>' + (l.ip || '—') + '</td></tr>'; }).join('') || emptyRow(5);
+  var rows = data.map(function(l) { return '<tr><td>' + (l.created_at ? new Date(l.created_at).toLocaleString('es-AR') : '—') + '</td><td style="font-size:11px">' + (l.usuario_nombre || '—') + '<br><span style="color:var(--ts)">' + (l.usuario_email || '') + '</span></td><td><span class="bd ' + (bm[l.accion] || 'bdc') + '">' + l.accion + '</span></td><td>' + (l.recurso || '—') + '</td><td>' + (l.ip || '—') + '</td></tr>'; }).join('') || emptyRow(5);
   pc.innerHTML = mkTable('tbl-audit', 'Log de auditoría', 'Últimas ' + data.length, ['Fecha/Hora','Usuario','Acción','Recurso','IP'], rows);
 }
 
