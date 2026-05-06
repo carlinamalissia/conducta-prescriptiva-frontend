@@ -168,7 +168,10 @@ tbody td{padding:8px 12px;color:var(--tx);white-space:nowrap}
     <div class="sbh"><div class="sbl"><div class="sbli">🏥</div><div class="sblt"><h2>Sanatorio de la Cañada</h2><p>Conducta Prescriptiva</p></div></div></div>
     <div class="sbu"><div class="sbun" id="sb-nombre">—</div><div class="sbur" id="sb-email">—</div><span class="rb" id="sb-rol">—</span></div>
     <nav class="sbn" id="sbn"></nav>
-    <div class="sbf"><button class="blo" onclick="doLogout()">🚪 Cerrar sesión</button></div>
+    <div class="sbf">
+      <button class="blo" id="btn-wa" onclick="abrirWA()" style="background:rgba(37,211,102,.12);color:rgba(180,255,200,.85);margin-bottom:6px">💬 Ayuda por WhatsApp</button>
+      <button class="blo" onclick="doLogout()">🚪 Cerrar sesión</button>
+    </div>
   </nav>
   <div class="mc">
     <div class="tb">
@@ -271,6 +274,23 @@ tbody td{padding:8px 12px;color:var(--tx);white-space:nowrap}
   <div class="fg"><label class="fl">Repetir contraseña</label><div class="pw-wrap"><input type="password" id="reset-pwd2" class="fi" placeholder="Repetir contraseña"><button type="button" class="pw-eye" onclick="togglePwd('reset-pwd2',this)">👁</button></div></div>
   <div id="reset-msg" style="font-size:12px;margin-top:8px;display:none"></div>
   <div class="mdf"><button class="bc" onclick="cerrarModal('mo-reset')">Cancelar</button><button class="bp" onclick="confirmarReset()">Guardar contraseña</button></div>
+</div></div>
+
+<!-- MODAL CONFIG WA Y MAIL MASIVO -->
+<div class="mo" id="mo-cfg"><div class="md" style="width:540px">
+  <div class="mdt">⚙️ Configuración</div>
+  <div class="mds">Mesa de ayuda WhatsApp y notificaciones</div>
+  <div class="fg"><label class="fl">Número WhatsApp (sin +, con código país)</label><input type="text" id="cfg-wanum" class="fi" placeholder="5493517670798"></div>
+  <div class="fg"><label class="fl">Mensaje predeterminado de WhatsApp</label><textarea id="cfg-wamsg" class="fi" rows="3" style="resize:vertical"></textarea></div>
+  <div class="mdf"><button class="bc" onclick="cerrarModal('mo-cfg')">Cancelar</button><button class="bp" onclick="guardarConfig()">💾 Guardar</button></div>
+</div></div>
+
+<div class="mo" id="mo-masivo"><div class="md">
+  <div class="mdt">📢 Notificación masiva</div>
+  <div class="mds" id="mo-masivo-sub">Enviar mail a todos los usuarios activos</div>
+  <div class="fg"><label class="fl">Asunto</label><input type="text" id="masivo-asunto" class="fi"></div>
+  <div class="fg"><label class="fl">Mensaje adicional (opcional)</label><textarea id="masivo-msg" class="fi" rows="3" placeholder="Texto adicional para incluir en el mail..." style="resize:vertical"></textarea></div>
+  <div class="mdf"><button class="bc" onclick="cerrarModal('mo-masivo')">Cancelar</button><button class="bp" onclick="confirmarMasivo()">📤 Enviar a todos</button></div>
 </div></div>
 <div class="tc-c" id="tc-c"></div>
 
@@ -392,7 +412,7 @@ function showApp() {
   document.getElementById('sb-nombre').textContent = user.nombre + ' ' + user.apellido;
   document.getElementById('sb-email').textContent = user.email;
   var rb = document.getElementById('sb-rol'); rb.textContent = rolLbl(user.rol); rb.className = 'rb rb-' + user.rol;
-  buildNav(); cargarFiltros().then(function() { nav('conducta'); });
+  buildNav(); Promise.all([cargarFiltros(), cargarConfig()]).then(function() { nav('conducta'); });
 }
 function rolLbl(r) { return ({ admin:'Admin', directorio:'Directorio', gerente:'Gerente', operaciones_medicas:'Op. Médicas', jefe_servicio:'Jefe Servicio', profesional:'Profesional' })[r] || r; }
 function buildNav() {
@@ -402,7 +422,8 @@ function buildNav() {
     { id:'detalle',  icon:'🔎', lbl:'Detalle Prescripciones', roles:['admin','directorio','gerente','operaciones_medicas','jefe_servicio','profesional'] },
     { id:'uploads',  icon:'📤', lbl:'Cargar Datos', roles:['admin','directorio','gerente','operaciones_medicas'] },
     { id:'usuarios', icon:'👥', lbl:'Usuarios', roles:['admin','operaciones_medicas'] },
-    { id:'auditoria',icon:'🔍', lbl:'Auditoría', roles:['admin'] }
+    { id:'auditoria',icon:'🔍', lbl:'Auditoría', roles:['admin'] },
+    { id:'ayuda',    icon:'❓', lbl:'Ayuda',     roles:['admin','directorio','gerente','operaciones_medicas','jefe_servicio','profesional'] }
   ];
   sbn.innerHTML = ''; var sDash = false, sAdm = false;
   its.forEach(function(i) {
@@ -416,7 +437,7 @@ function nav(v) {
   view = v;
   document.querySelectorAll('.ni').forEach(function(e) { e.classList.remove('active'); });
   var el = document.getElementById('ni-' + v); if (el) el.classList.add('active');
-  var tit = { conducta:'Análisis de Conducta Prescriptiva', detalle:'Detalle de Prescripciones', uploads:'Carga de Datos', usuarios:'Gestión de Usuarios', auditoria:'Auditoría del Sistema' };
+  var tit = { conducta:'Análisis de Conducta Prescriptiva', detalle:'Detalle de Prescripciones', uploads:'Carga de Datos', usuarios:'Gestión de Usuarios', auditoria:'Auditoría del Sistema', ayuda:'Centro de Ayuda' };
   document.getElementById('tbt').textContent = tit[v] || v;
   var canMail = ['admin','directorio','gerente','operaciones_medicas'].indexOf(user.rol) >= 0;
   document.getElementById('btn-mail').style.display = (v === 'conducta' && canMail) ? 'flex' : 'none';
@@ -428,6 +449,7 @@ function nav(v) {
     else if (v === 'uploads') uploads();
     else if (v === 'usuarios') usuarios();
     else if (v === 'auditoria') auditoria();
+    else if (v === 'ayuda') ayuda();
   });
 }
 async function cargarFiltros() {
@@ -773,6 +795,14 @@ async function subirArchivo() {
     var d = await r.json(); if (!r.ok) throw new Error(d.detail || 'Error');
     showToast('✅ ' + d.filas_procesadas.toLocaleString() + ' filas procesadas', 's');
     uploads(); cargarFiltros();
+    if (['admin','operaciones_medicas'].indexOf(user.rol) >= 0) {
+      setTimeout(function(){
+        if(confirm('¿Querés enviar una notificación por mail a todos los usuarios informando que se actualizaron los datos?')) {
+          abrirMailMasivo('Datos actualizados — Conducta Prescriptiva',
+            'Se han cargado nuevos datos en el sistema de Conducta Prescriptiva.');
+        }
+      }, 800);
+    }
   } catch(e) { showToast('Error: ' + e.message, 'e'); }
 }
 function confBorrar(id, fn) {
@@ -923,6 +953,160 @@ function initSort() {
   });
 }
 
+
+// ─── CONFIGURACIÓN Y WA ────────────────────────────────────────────────────
+var appCfg = { wa_mensaje: 'Hola! quiero hacer una consulta sobre el uso de la app de Conducta Prescriptiva', wa_numero: '5493517670798' };
+
+async function cargarConfig() {
+  try { var r = await apiFetch('/config/'); if (r && r.ok) appCfg = await r.json(); } catch(e) {}
+}
+
+function abrirWA() {
+  var msg = encodeURIComponent(appCfg.wa_mensaje || 'Hola! quiero hacer una consulta sobre Conducta Prescriptiva');
+  var num = (appCfg.wa_numero || '5493517670798').replace(/[^0-9]/g,'');
+  window.open('https://wa.me/' + num + '?text=' + msg, '_blank');
+}
+
+async function abrirConfigWA() {
+  await cargarConfig();
+  document.getElementById('cfg-wanum').value = appCfg.wa_numero || '5493517670798';
+  document.getElementById('cfg-wamsg').value = appCfg.wa_mensaje || '';
+  mostrarModal('mo-cfg');
+}
+
+async function guardarConfig() {
+  var payload = {
+    wa_numero:  document.getElementById('cfg-wanum').value.trim(),
+    wa_mensaje: document.getElementById('cfg-wamsg').value.trim()
+  };
+  var r = await apiFetch('/config/', { method: 'PUT', body: JSON.stringify(payload) });
+  if (r && r.ok) { appCfg.wa_numero = payload.wa_numero; appCfg.wa_mensaje = payload.wa_mensaje; showToast('Configuración guardada', 's'); cerrarModal('mo-cfg'); }
+  else showToast('Error al guardar', 'e');
+}
+
+// ─── MAIL MASIVO ──────────────────────────────────────────────────────────────
+function abrirMailMasivo(asuntoSugerido, msgSugerido) {
+  document.getElementById('masivo-asunto').value = asuntoSugerido || 'Actualización de datos — Conducta Prescriptiva';
+  document.getElementById('masivo-msg').value = msgSugerido || '';
+  mostrarModal('mo-masivo');
+}
+
+async function confirmarMasivo() {
+  var asunto = document.getElementById('masivo-asunto').value.trim();
+  var msg    = document.getElementById('masivo-msg').value.trim();
+  if (!asunto) { showToast('Ingresá un asunto', 'w'); return; }
+  var css = 'body{font-family:Arial,sans-serif;color:#181E42;max-width:700px;margin:0 auto;padding:24px}h2{color:#1D8D6B;border-bottom:2px solid #1DBC61;padding-bottom:8px}.footer{font-size:11px;color:#555;border-top:2px solid #1DBC61;padding-top:14px;margin-top:28px;line-height:1.7}';
+  var body = '<h2>🏥 Sanatorio de la Cañada — Conducta Prescriptiva</h2>'
+    + (msg ? '<p>' + msg + '</p>' : '')
+    + '<p>Los datos del sistema de Conducta Prescriptiva han sido actualizados. Podés ingresar a la aplicación para consultar la información actualizada.</p>'
+    + '<div style="text-align:center;margin:24px 0"><a href="https://carlinamalissia.github.io/conducta-prescriptiva-frontend/" style="background:linear-gradient(135deg,#1D8D6B,#1DBC61);color:white;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:700;display:inline-block">Ir a la aplicación →</a></div>'
+    + '<div class="footer"><p><em>La información es confidencial, de uso interno y exclusiva de Sanatorio de la Cañada.</em></p>'
+    + '<p><em>Su acceso está destinado únicamente a fines profesionales e institucionales autorizados.</em></p>'
+    + '<p><em>Esta iniciativa forma parte de nuestro proceso de mejora continua y gestión basada en datos.</em></p>'
+    + '<p style="font-weight:700;color:#1D8D6B">Sanatorio de la Cañada</p></div>';
+  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>' + css + '</style></head><body>' + body + '</body></html>';
+  var r = await apiFetch('/mail/masivo', { method: 'POST', body: JSON.stringify({ asunto: asunto, cuerpo_html: html }) });
+  if (r && r.ok) {
+    var d = await r.json();
+    showToast('✅ Mail enviado a ' + d.enviado_a + ' usuarios', 's');
+    cerrarModal('mo-masivo');
+  } else {
+    var e = await r.json(); showToast((e && e.detail) || 'Error', 'e');
+  }
+}
+
+// ─── AYUDA ────────────────────────────────────────────────────────────────────
+function ayuda() {
+  var canCfg = ['admin','operaciones_medicas'].indexOf(user.rol) >= 0;
+  var pc = document.getElementById('pc');
+  pc.innerHTML = '<div style="max-width:860px">'
+
+    // Acceso rápido
+    + '<div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">'
+    + '<button class="bp" onclick="abrirWA()" style="background:linear-gradient(135deg,#25d366,#128c7e)">💬 Abrir WhatsApp</button>'
+    + (canCfg ? '<button class="bc" onclick="abrirConfigWA()">⚙️ Configurar mensaje WA</button>' : '')
+    + (canCfg ? '<button class="bc" onclick="abrirMailMasivo()">📢 Enviar notificación a todos</button>' : '')
+    + '</div>'
+
+    // Sección: ¿Qué es esto?
+    + mkAyuda('📊 ¿Qué es el análisis de conducta prescriptiva?',
+      'Es una herramienta que relaciona las <strong>atenciones médicas</strong> con las <strong>prescripciones emitidas</strong>, '
+      + 'permitiendo evaluar cuántos pacientes atendidos recibieron una prescripción y en qué cantidad. '
+      + 'El indicador principal es el <strong>Ratio P/C</strong> (prescripciones por consulta).')
+
+    // Sección: Escenarios
+    + mkAyuda('🔢 Los tres escenarios',
+      '<table style="width:100%;border-collapse:collapse;font-size:12px">'
+      + '<tr style="background:var(--bg)"><th style="padding:8px;text-align:left;border-bottom:1px solid var(--bo)">Escenario</th><th style="padding:8px;text-align:left;border-bottom:1px solid var(--bo)">Descripción</th><th style="padding:8px;text-align:left;border-bottom:1px solid var(--bo)">Cuándo usarlo</th></tr>'
+      + '<tr><td style="padding:8px;border-bottom:1px solid var(--bo)"><strong>ESC 1 — Completo</strong></td><td style="padding:8px;border-bottom:1px solid var(--bo)">Todos los datos sin exclusiones</td><td style="padding:8px;border-bottom:1px solid var(--bo)">Visión general del período</td></tr>'
+      + '<tr style="background:var(--bg)"><td style="padding:8px;border-bottom:1px solid var(--bo)"><strong>ESC 2 — Sin PAMI</strong></td><td style="padding:8px;border-bottom:1px solid var(--bo)">Excluye atenciones de obra social PAMI</td><td style="padding:8px;border-bottom:1px solid var(--bo)">Análisis de cartilla propia</td></tr>'
+      + '<tr><td style="padding:8px"><strong>ESC 3 — Sin PAMI ni Lab</strong></td><td style="padding:8px">Excluye PAMI, Laboratorio y vacunaciones</td><td style="padding:8px">Análisis de conducta prescriptiva clínica pura</td></tr>'
+      + '</table>')
+
+    // Sección: Semáforos
+    + mkAyuda('🚦 Semáforos de evaluación',
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">'
+      + '<div><strong>Ratio P/C</strong> (prescripciones por consulta)<br>'
+      + '<span style="color:#C0392B">🔴 Menor a 0.5</span> — Muy baja prescripción<br>'
+      + '<span style="color:#E67E22">🟡 Entre 0.5 y 1.5</span> — Prescripción moderada<br>'
+      + '<span style="color:#1D8D6B">🟢 Mayor a 1.5</span> — Prescripción activa</div>'
+      + '<div><strong>% Con Prescripción</strong><br>'
+      + '<span style="color:#C0392B">🔴 Menor a 20%</span> — Mayoría sin prescripción<br>'
+      + '<span style="color:#E67E22">🟡 Entre 20% y 40%</span> — Nivel intermedio<br>'
+      + '<span style="color:#1D8D6B">🟢 Mayor a 40%</span> — Alta cobertura prescriptiva</div>'
+      + '</div>')
+
+    // Sección: Filtros
+    + mkAyuda('🔍 Cómo usar los filtros',
+      '<ul style="padding-left:18px;line-height:2;font-size:13px">'
+      + '<li><strong>Período rápido:</strong> botones 1 mes / Trimestre / Semestre / Año para selección rápida</li>'
+      + '<li><strong>Desde / Hasta:</strong> rango personalizado en formato mes/año</li>'
+      + '<li><strong>Centros:</strong> click para abrir el selector, tildar uno o varios centros. Sin selección = todos</li>'
+      + '<li><strong>Servicios:</strong> igual que centros, multi-selección disponible</li>'
+      + '<li>Hacé click en <strong>Analizar</strong> para aplicar los filtros seleccionados</li>'
+      + '<li>Los filtros se mantienen al pasar a <strong>Detalle Prescripciones</strong></li>'
+      + '</ul>')
+
+    // Sección: Detalle y Frecuencia
+    + mkAyuda('🔎 Detalle de Prescripciones',
+      '<ul style="padding-left:18px;line-height:2;font-size:13px">'
+      + '<li><strong>Ver detalle:</strong> muestra cada prescripción individual con fecha, paciente, práctica y obra social</li>'
+      + '<li><strong>Frecuencia por práctica:</strong> ranking de los códigos más prescriptos, con quiénes los prescriben</li>'
+      + '<li><strong>Búsqueda libre:</strong> escribí el nombre o código de una práctica para filtrar</li>'
+      + '<li>Usá el botón <strong>⬇ XLS</strong> en cualquier tabla para descargar los datos en Excel</li>'
+      + '</ul>')
+
+    // Sección: Roles
+    + mkAyuda('👥 Roles de usuario',
+      '<table style="width:100%;border-collapse:collapse;font-size:12px">'
+      + '<tr style="background:var(--bg)"><th style="padding:7px;text-align:left;border-bottom:1px solid var(--bo)">Rol</th><th style="padding:7px;text-align:left;border-bottom:1px solid var(--bo)">Acceso</th></tr>'
+      + '<tr><td style="padding:7px;border-bottom:1px solid var(--bo)"><span class="rb rb-admin">Admin</span></td><td style="padding:7px;border-bottom:1px solid var(--bo)">Acceso total. Gestión de usuarios y auditoría</td></tr>'
+      + '<tr style="background:var(--bg)"><td style="padding:7px;border-bottom:1px solid var(--bo)"><span class="rb rb-directorio">Directorio</span></td><td style="padding:7px;border-bottom:1px solid var(--bo)">Todos los datos, todos los centros. Solo lectura</td></tr>'
+      + '<tr><td style="padding:7px;border-bottom:1px solid var(--bo)"><span class="rb rb-gerente">Gerente</span></td><td style="padding:7px;border-bottom:1px solid var(--bo)">Sus centros asignados. Puede exportar y enviar mails</td></tr>'
+      + '<tr style="background:var(--bg)"><td style="padding:7px;border-bottom:1px solid var(--bo)"><span class="rb rb-operaciones_medicas">Op. Médicas</span></td><td style="padding:7px;border-bottom:1px solid var(--bo)">Sus centros. Puede cargar datos y gestionar usuarios</td></tr>'
+      + '<tr><td style="padding:7px;border-bottom:1px solid var(--bo)"><span class="rb rb-jefe_servicio">Jefe Servicio</span></td><td style="padding:7px;border-bottom:1px solid var(--bo)">Su centro y servicio asignado. Solo lectura</td></tr>'
+      + '<tr style="background:var(--bg)"><td style="padding:7px"><span class="rb rb-profesional">Profesional</span></td><td style="padding:7px">Solo sus propias prescripciones (por matrícula)</td></tr>'
+      + '</table>')
+
+    // Sección: Metodología
+    + mkAyuda('⚙️ Metodología del análisis',
+      '<ul style="padding-left:18px;line-height:2;font-size:13px">'
+      + '<li>El <strong>join</strong> entre atenciones y prescripciones se realiza por: Paciente + Médico + Fecha</li>'
+      + '<li>Una consulta se cuenta como <strong>"con prescripción"</strong> si tiene al menos una práctica asociada</li>'
+      + '<li>Las <strong>fibroscopías</strong> se desglosan por especialidad: Gastro, ORL, Neumo, Urológica</li>'
+      + '<li>El <strong>Laboratorio</strong> se excluye en ESC 3 para analizar conducta prescriptiva clínica</li>'
+      + '<li>Los datos se actualizan al cargar nuevos archivos en <strong>Cargar Datos</strong></li>'
+      + '</ul>')
+
+    + '</div>';
+}
+
+function mkAyuda(titulo, contenido) {
+  return '<div class="tc" style="margin-bottom:12px">'
+    + '<div class="tch"><div class="tct">' + titulo + '</div></div>'
+    + '<div style="padding:16px 18px;font-size:13px;line-height:1.7;color:var(--tx)">' + contenido + '</div>'
+    + '</div>';
+}
 // UTILS
 function fmt(n) { return (n||0).toLocaleString('es-AR'); }
 function badgeCat(c) {
