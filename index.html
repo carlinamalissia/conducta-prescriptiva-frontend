@@ -273,7 +273,8 @@ function showApp(){
   document.getElementById('sb-nombre').textContent=user.nombre+' '+user.apellido;
   document.getElementById('sb-email').textContent=user.email;
   var rb=document.getElementById('sb-rol');rb.textContent=rolLbl(user.rol);rb.className='rb rb-'+user.rol;
-  buildNav();cargarFiltros();nav('conducta');
+  buildNav();
+  cargarFiltros().then(function(){nav('conducta');});
 }
 function rolLbl(r){return({admin:'Admin',directorio:'Directorio',gerente:'Gerente',operaciones_medicas:'Op. Médicas',jefe_servicio:'Jefe Servicio',profesional:'Profesional'})[r]||r;}
 function buildNav(){
@@ -302,14 +303,15 @@ function nav(v){
   var canMail=['admin','directorio','gerente','operaciones_medicas'].indexOf(user.rol)>=0;
   document.getElementById('btn-mail').style.display=(v==='conducta'&&canMail)?'flex':'none';
   document.getElementById('kpi-strip').style.display=(v==='conducta'&&analisisData&&!analisisData.vacio)?'flex':'none';
-  if(v==='conducta')conducta();
-  else if(v==='detalle')detalle();
+  if(v==='conducta'){cargarFiltros().then(function(){conducta();});}
+  else if(v==='detalle'){cargarFiltros().then(function(){detalle();});}
   else if(v==='uploads')uploads();
   else if(v==='usuarios')usuarios();
   else if(v==='auditoria')auditoria();
 }
 async function cargarFiltros(){
   try{var r=await apiFetch('/dashboard/filtros');if(r&&r.ok)fd=await r.json();}catch(e){}
+  return fd;
 }
 function cOpts(sel){
   var centros=(fd.centros||[]).slice();
