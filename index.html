@@ -138,6 +138,11 @@ tbody td{padding:8px 12px;color:var(--tx);white-space:nowrap}
 .sp{display:flex;align-items:center;justify-content:center;padding:50px;color:var(--ts);gap:10px}
 .spi{width:22px;height:22px;border:3px solid var(--bo);border-top-color:var(--vd);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
+
+.pw-wrap{position:relative}
+.pw-wrap .fi{padding-right:36px}
+.pw-eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--ts);font-size:15px;padding:2px;line-height:1}
+.pw-eye:hover{color:var(--vd)}
 .pag-info{font-size:11px;color:var(--ts);padding:8px 14px;border-top:1px solid var(--bo)}
 .search-input{flex:1;min-width:180px;padding:7px 10px;border:1.5px solid var(--bo);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12px;outline:none}
 .search-input:focus{border-color:var(--vd)}
@@ -151,8 +156,9 @@ tbody td{padding:8px 12px;color:var(--tx);white-space:nowrap}
     <div class="ll"><div class="li">🏥</div><div class="lt"><h1>Sanatorio de la Cañada</h1><p>Sistema de Gestión Clínica</p></div></div>
     <h2 class="lh">Bienvenido</h2><p class="ls2">Ingresá tus credenciales para continuar</p>
     <div class="fg"><label class="fl">Email</label><input type="email" id="lin-email" class="fi" placeholder="usuario@sanatorio.com.ar" autocomplete="email"></div>
-    <div class="fg"><label class="fl">Contraseña</label><input type="password" id="lin-pwd" class="fi" placeholder="••••••••"></div>
+    <div class="fg"><label class="fl">Contraseña</label><div class="pw-wrap"><input type="password" id="lin-pwd" class="fi" placeholder="••••••••"><button type="button" class="pw-eye" onclick="togglePwd('lin-pwd',this)" title="Mostrar/ocultar">👁</button></div></div>
     <button class="blg" id="blg" onclick="doLogin()">Ingresar al sistema</button>
+    <div style="text-align:center;margin-top:12px"><a href="#" onclick="mostrarRecuperarPass()" style="font-size:12px;color:var(--vd);text-decoration:none">¿Olvidé mi contraseña?</a></div>
     <div class="le" id="lerr"></div>
   </div>
 </div>
@@ -202,7 +208,7 @@ tbody td{padding:8px 12px;color:var(--tx);white-space:nowrap}
     <div class="fg"><label class="fl">Nombre</label><input type="text" id="u-nom" class="fi"></div>
     <div class="fg"><label class="fl">Apellido</label><input type="text" id="u-ape" class="fi"></div>
     <div class="fg ff"><label class="fl">Email</label><input type="email" id="u-eml" class="fi"></div>
-    <div class="fg ff"><label class="fl">Contraseña <span style="font-size:10px;color:var(--ts)">(vacío = no cambiar)</span></label><input type="password" id="u-pwd" class="fi" placeholder="Nueva contraseña"></div>
+    <div class="fg ff"><label class="fl">Contraseña <span style="font-size:10px;color:var(--ts)">(vacío = no cambiar)</span></label><div class="pw-wrap"><input type="password" id="u-pwd" class="fi" placeholder="Nueva contraseña"><button type="button" class="pw-eye" onclick="togglePwd('u-pwd',this)" title="Mostrar/ocultar">👁</button></div></div>
     <div class="fg"><label class="fl">Rol</label>
       <select id="u-rol" class="fi">
         <option value="profesional">Profesional</option><option value="jefe_servicio">Jefe de Servicio</option>
@@ -247,6 +253,25 @@ tbody td{padding:8px 12px;color:var(--tx);white-space:nowrap}
   <div class="mdf"><button class="bc" onclick="cerrarModal('mo-conf')">Cancelar</button><button class="bdng" id="btn-conf-ok">Confirmar</button></div>
 </div></div>
 
+
+<!-- MODAL RECUPERAR CONTRASEÑA -->
+<div class="mo" id="mo-forgot"><div class="md" style="max-width:400px">
+  <div class="mdt">🔑 Recuperar contraseña</div>
+  <div class="mds">Ingresá tu email y te enviaremos un enlace para restablecer tu contraseña</div>
+  <div class="fg"><label class="fl">Email</label><input type="email" id="forgot-email" class="fi" placeholder="tu@email.com"></div>
+  <div id="forgot-msg" style="font-size:12px;margin-top:8px;display:none"></div>
+  <div class="mdf"><button class="bc" onclick="cerrarModal('mo-forgot')">Cancelar</button><button class="bp" id="btn-forgot" onclick="enviarRecuperacion()">Enviar enlace</button></div>
+</div></div>
+
+<!-- MODAL NUEVA CONTRASEÑA -->
+<div class="mo" id="mo-reset"><div class="md" style="max-width:400px">
+  <div class="mdt">🔑 Nueva contraseña</div>
+  <div class="mds">Ingresá tu nueva contraseña</div>
+  <div class="fg"><label class="fl">Nueva contraseña</label><div class="pw-wrap"><input type="password" id="reset-pwd" class="fi" placeholder="Mínimo 8 caracteres"><button type="button" class="pw-eye" onclick="togglePwd('reset-pwd',this)">👁</button></div></div>
+  <div class="fg"><label class="fl">Repetir contraseña</label><div class="pw-wrap"><input type="password" id="reset-pwd2" class="fi" placeholder="Repetir contraseña"><button type="button" class="pw-eye" onclick="togglePwd('reset-pwd2',this)">👁</button></div></div>
+  <div id="reset-msg" style="font-size:12px;margin-top:8px;display:none"></div>
+  <div class="mdf"><button class="bc" onclick="cerrarModal('mo-reset')">Cancelar</button><button class="bp" onclick="confirmarReset()">Guardar contraseña</button></div>
+</div></div>
 <div class="tc-c" id="tc-c"></div>
 
 <script>
@@ -261,6 +286,78 @@ var filtrosGlobales = { desde: '', hasta: '', centros: '', servicios: '' };
 
 window.onload = function() { if (token && user) showApp(); };
 
+
+// ─── PASSWORD TOGGLE ────────────────────────────────────────────────────────
+function togglePwd(id, btn) {
+  var inp = document.getElementById(id);
+  if (!inp) return;
+  var show = inp.type === 'password';
+  inp.type = show ? 'text' : 'password';
+  btn.textContent = show ? '🙈' : '👁';
+}
+
+// ─── RECUPERAR CONTRASEÑA ────────────────────────────────────────────────────
+function mostrarRecuperarPass() {
+  document.getElementById('forgot-email').value = '';
+  var msg = document.getElementById('forgot-msg');
+  msg.style.display = 'none'; msg.textContent = '';
+  mostrarModal('mo-forgot');
+}
+
+async function enviarRecuperacion() {
+  var email = document.getElementById('forgot-email').value.trim();
+  var msg = document.getElementById('forgot-msg');
+  var btn = document.getElementById('btn-forgot');
+  if (!email) { msg.textContent = 'Ingresá tu email'; msg.style.color='#C0392B'; msg.style.display='block'; return; }
+  btn.disabled = true; btn.textContent = 'Enviando...';
+  try {
+    var r = await fetch(API + '/auth/forgot-password', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email })
+    });
+    msg.textContent = 'Si el email existe, recibirás el enlace en unos minutos. Revisá tu bandeja.';
+    msg.style.color = '#1D8D6B'; msg.style.display = 'block';
+    btn.textContent = '✅ Enviado';
+  } catch(e) {
+    msg.textContent = 'Error al enviar. Intentá de nuevo.'; msg.style.color = '#C0392B'; msg.style.display = 'block';
+    btn.disabled = false; btn.textContent = 'Enviar enlace';
+  }
+}
+
+// Reset password desde el link del mail (token en URL)
+var resetToken = null;
+(function checkResetToken() {
+  var params = new URLSearchParams(window.location.search);
+  var tok = params.get('reset_token');
+  if (tok) {
+    resetToken = tok;
+    window.onload = function() {
+      document.getElementById('ls').style.display = 'flex';
+      document.getElementById('app').style.display = 'none';
+      setTimeout(function() { mostrarModal('mo-reset'); }, 300);
+    };
+  }
+})();
+
+async function confirmarReset() {
+  var pwd  = document.getElementById('reset-pwd').value;
+  var pwd2 = document.getElementById('reset-pwd2').value;
+  var msg  = document.getElementById('reset-msg');
+  if (!pwd || pwd.length < 8) { msg.textContent = 'La contraseña debe tener al menos 8 caracteres'; msg.style.color='#C0392B'; msg.style.display='block'; return; }
+  if (pwd !== pwd2) { msg.textContent = 'Las contraseñas no coinciden'; msg.style.color='#C0392B'; msg.style.display='block'; return; }
+  try {
+    var r = await fetch(API + '/auth/reset-password', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token: resetToken, new_password: pwd })
+    });
+    var d = await r.json();
+    if (!r.ok) throw new Error(d.detail || 'Error');
+    msg.textContent = '✅ Contraseña actualizada. Ya podés ingresar.'; msg.style.color='#1D8D6B'; msg.style.display='block';
+    setTimeout(function() { cerrarModal('mo-reset'); history.replaceState(null,'','/'); }, 2500);
+  } catch(e) {
+    msg.textContent = e.message; msg.style.color='#C0392B'; msg.style.display='block';
+  }
+}
 // AUTH
 async function doLogin() {
   var em = document.getElementById('lin-email').value.trim(), pw = document.getElementById('lin-pwd').value;
@@ -525,7 +622,7 @@ function renderKpiChart() {
     },
     options: {
       responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 10, padding: 6 } },
+      plugins: { legend: { display: false },
         tooltip: { callbacks: { label: function(ctx){ return ctx.dataset.label + ': ' + ctx.parsed.y + (ctx.datasetIndex===0?'%':''); } } } },
       scales: {
         x: { ticks: { font: { size: 9 } }, grid: { display: false } },
@@ -586,20 +683,7 @@ function detalle() {
   var desdeVal = filtrosGlobales.desde || mesAct(-1);
   var hastaVal = filtrosGlobales.hasta || mesAct(0);
   var escNom = ['ESC 1: Completo','ESC 2: Sin PAMI','ESC 3: Sin PAMI ni Lab'][['esc1','esc2','esc3'].indexOf(escActivo)] || 'ESC 1: Completo';
-  // Banner de KPIs si hay datos cargados
-  var kpiBanner = '';
-  if (analisisData && !analisisData.vacio) {
-    var esc = analisisData.resumen[escActivo];
-    kpiBanner = '<div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">'
-      + '<div class="kpi-s"><div class="kpi-sl">Consultas</div><div class="kpi-sv">'+fmt(esc.consultas)+'</div></div>'
-      + '<div class="kpi-s"><div class="kpi-sl">Con Presc.</div><div class="kpi-sv">'+fmt(esc.con_presc)+'</div><div class="kpi-ss">'+esc.sem_pct+' '+esc.pct_con_presc+'%</div></div>'
-      + '<div class="kpi-s"><div class="kpi-sl">Sin Presc.</div><div class="kpi-sv">'+fmt(esc.sin_presc)+'</div></div>'
-      + '<div class="kpi-s"><div class="kpi-sl">Total Presc.</div><div class="kpi-sv">'+fmt(esc.total_presc)+'</div></div>'
-      + '<div class="kpi-s"><div class="kpi-sl">Ratio P/C</div><div class="kpi-sv">'+esc.ratio_pc+'</div><div class="kpi-ss">'+esc.sem_ratio+'</div></div>'
-      + '<div class="kpi-s" style="flex:1;min-width:120px"><div class="kpi-sl">Escenario activo</div><div style="margin-top:4px"><span class="esc-badge">'+escNom+'</span></div></div>'
-      + '</div>';
-  }
-  pc.innerHTML = kpiBanner + '<div class="buscar-box">'
+  pc.innerHTML = '<div class="buscar-box">'
     + '<div class="fgr"><span class="fla">Desde</span><input type="month" id="d-desde" class="fin" value="' + desdeVal + '"></div>'
     + '<div class="fgr"><span class="fla">Hasta</span><input type="month" id="d-hasta" class="fin" value="' + hastaVal + '"></div>'
     + '<div class="fgr"><span class="fla">Centros</span><div class="ms-wrap" id="ms-dcentros"></div></div>'
@@ -640,7 +724,7 @@ async function cargarDetalle(off) {
   var rows = data.registros.map(function(reg) { return '<tr><td>' + (reg.fecha || '—') + '</td><td>' + (reg.periodo || '—') + '</td><td>' + (reg.paciente || '—') + '</td><td>' + (reg.obra_social || '—') + '</td><td>' + (reg.matricula || '—') + '</td><td>' + (reg.nombre_medico || '—') + '</td><td>' + (reg.servicio || '—') + '</td><td>' + (reg.codigo || '—') + '</td><td>' + (reg.practica || '—') + '</td><td><span class="bd ' + badgeCat(reg.categoria) + '">' + (reg.categoria || '—') + '</span></td><td>' + (reg.cantidad || 1) + '</td></tr>'; }).join('');
   var prev = off > 0 ? '<button class="per-btn" onclick="cargarDetalle(' + (off - 300) + ')">← Anterior</button>' : '';
   var next = (off + 300) < data.total ? '<button class="per-btn" onclick="cargarDetalle(' + (off + 300) + ')">Siguiente →</button>' : '';
-  body.innerHTML = mkTable('tbl-det', 'Prescripciones <span class="esc-badge">' + escNom + '</span>', fmt(data.total) + ' registros', cols, rows)
+  body.innerHTML = mkTable('tbl-det', 'Prescripciones', fmt(data.total) + ' registros — <span class="esc-badge">' + escNom + '</span>', cols, rows)
     + '<div class="pag-info">Mostrando ' + (off + 1) + '–' + Math.min(off + 300, data.total) + ' de ' + fmt(data.total) + ' &nbsp;' + prev + ' ' + next + '</div>';
   setTimeout(initSort, 80);
 }
