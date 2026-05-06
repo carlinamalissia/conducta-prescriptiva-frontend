@@ -6,12 +6,11 @@
 <title>Conducta Prescriptiva — Sanatorio de la Cañada</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 :root{--vd:#1D8D6B;--vl:#1DBC61;--cel:#6BC7D8;--az:#47B0FE;--pu:#181E42;--vi:#7A4EFF;--ro:#FF64A7;--va:#E3FFEE;--alt:#1BBC9B;--bg:#F4F7F6;--bo:#E2EAE7;--tx:#181E42;--ts:#6B7A8D;--sw:260px;--ra:12px;--sh:0 4px 24px rgba(24,30,66,.12)}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh}
-
-/* LOGIN */
 #ls{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--pu) 0%,#1a3a4a 50%,var(--vd) 100%);overflow:hidden}
 .lc{background:rgba(255,255,255,.97);border-radius:20px;padding:44px;width:400px;box-shadow:0 32px 80px rgba(24,30,66,.35);animation:su .4s ease forwards}
 @keyframes su{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
@@ -25,12 +24,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
 .fl{display:block;font-size:12px;font-weight:500;color:var(--tx);margin-bottom:5px}
 .fi{width:100%;padding:10px 14px;border:1.5px solid var(--bo);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--tx);background:#FAFBFA;outline:none;transition:border-color .2s}
 .fi:focus{border-color:var(--vd);box-shadow:0 0 0 3px rgba(29,141,107,.1)}
-.blg{width:100%;padding:12px;background:linear-gradient(135deg,var(--vd),var(--vl));color:white;border:none;border-radius:8px;font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin-top:6px;transition:all .2s}
+.blg{width:100%;padding:12px;background:linear-gradient(135deg,var(--vd),var(--vl));color:white;border:none;border-radius:8px;font-family:'Outfit',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin-top:6px}
 .blg:hover{filter:brightness(1.05)}
 .blg:disabled{opacity:.6;cursor:not-allowed}
 .le{background:#FFF0F0;color:#C0392B;border:1px solid #FBBDBD;border-radius:6px;padding:8px 12px;font-size:12px;margin-top:10px;display:none}
-
-/* APP */
 #app{display:none;min-height:100vh}
 .sb{position:fixed;top:0;left:0;width:var(--sw);height:100vh;background:var(--pu);display:flex;flex-direction:column;z-index:100;overflow-y:auto}
 .sbh{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.08)}
@@ -56,16 +53,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
 .tb{background:white;border-bottom:1px solid var(--bo);padding:0 24px;position:sticky;top:0;z-index:50}
 .tb-top{height:52px;display:flex;align-items:center;gap:12px}
 .tbt{font-family:'Outfit',sans-serif;font-size:18px;font-weight:700;color:var(--pu);flex:1}
-
-/* KPI HEADER */
-.kpi-strip{display:flex;gap:10px;padding:10px 0;border-top:1px solid var(--bo);overflow-x:auto}
+.kpi-strip{display:flex;gap:10px;padding:10px 0;border-top:1px solid var(--bo);overflow-x:auto;align-items:stretch}
 .kpi-s{background:var(--bg);border-radius:8px;padding:8px 14px;min-width:120px;flex-shrink:0}
 .kpi-sl{font-size:10px;font-weight:500;color:var(--ts);text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px}
 .kpi-sv{font-family:'Outfit',sans-serif;font-size:18px;font-weight:800;color:var(--pu)}
 .kpi-ss{font-size:10px;color:var(--ts)}
+.kpi-chart{flex:1;min-width:300px;background:var(--bg);border-radius:8px;padding:8px 14px}
+.kpi-chart canvas{max-height:60px}
 .pc{flex:1;padding:20px 24px}
-
-/* FILTROS */
 .fb{background:white;border-radius:var(--ra);border:1px solid var(--bo);padding:12px 16px;margin-bottom:16px}
 .fb-row{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
 .fgr{display:flex;flex-direction:column;gap:4px}
@@ -73,15 +68,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
 .fse,.fin{padding:7px 10px;border:1.5px solid var(--bo);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--tx);background:white;outline:none;cursor:pointer;min-width:120px}
 .fse:focus,.fin:focus{border-color:var(--vd)}
 .per-btns{display:flex;gap:4px;flex-wrap:wrap}
-.per-btn{padding:5px 10px;border:1.5px solid var(--bo);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;cursor:pointer;background:white;color:var(--ts);transition:all .15s;white-space:nowrap}
+.per-btn{padding:5px 10px;border:1.5px solid var(--bo);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;cursor:pointer;background:white;color:var(--ts);white-space:nowrap}
 .per-btn:hover{border-color:var(--vd);color:var(--vd)}
 .per-btn.active{background:var(--vd);color:white;border-color:var(--vd)}
 .bf{padding:8px 16px;background:var(--vd);color:white;border:none;border-radius:7px;font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;cursor:pointer;align-self:flex-end}
 .bf:hover{background:var(--vl)}
-
 /* MULTISELECT */
 .ms-wrap{position:relative;min-width:160px}
-.ms-btn{padding:7px 10px;border:1.5px solid var(--bo);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--tx);background:white;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:6px;min-width:160px;width:100%}
+.ms-btn{padding:7px 10px;border:1.5px solid var(--bo);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--tx);background:white;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:6px;min-width:160px;width:100%;text-align:left}
 .ms-btn:hover,.ms-btn.open{border-color:var(--vd)}
 .ms-dd{position:absolute;top:100%;left:0;min-width:220px;background:white;border:1.5px solid var(--vd);border-top:none;border-radius:0 0 8px 8px;max-height:240px;overflow-y:auto;z-index:500;display:none;box-shadow:0 6px 16px rgba(24,30,66,.12)}
 .ms-dd.open{display:block}
@@ -90,12 +84,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
 .ms-item{padding:7px 12px;display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px}
 .ms-item:hover{background:var(--va)}
 .ms-item input{accent-color:var(--vd);width:13px;height:13px;flex-shrink:0;cursor:pointer}
-
 /* ESCENARIO */
 .esc-sel{display:flex;gap:4px;margin-bottom:12px;background:white;border:1px solid var(--bo);border-radius:8px;padding:4px;width:fit-content}
 .esc-btn{padding:5px 14px;border-radius:6px;border:none;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;cursor:pointer;color:var(--ts);background:transparent}
 .esc-btn.active{background:var(--pu);color:white;font-weight:600}
-
 /* TABLAS */
 .tc{background:white;border-radius:var(--ra);border:1px solid var(--bo);overflow:hidden;margin-bottom:14px}
 .tch{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--bo)}
@@ -116,8 +108,6 @@ tbody td{padding:8px 12px;color:var(--tx);white-space:nowrap}
 .bdv{background:var(--va);color:var(--vd)}.bdc{background:#E8F7FA;color:#0E7A8F}.bda{background:#E8F2FF;color:#1A5FBF}.bdp{background:#F0ECFF;color:#5B35C9}.bdr{background:#FFF0F5;color:#C0134A}.bdo{background:#FFF3E8;color:#C06000}
 .rc{font-weight:700;font-family:'Outfit',sans-serif;font-size:13px}
 .dg{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
-
-/* BOTONES */
 .bp{padding:8px 18px;background:linear-gradient(135deg,var(--vd),var(--vl));color:white;border:none;border-radius:7px;font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;cursor:pointer}
 .bp:hover{filter:brightness(1.05)}
 .bc{padding:8px 16px;background:var(--bg);color:var(--ts);border:1.5px solid var(--bo);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer}
@@ -126,8 +116,6 @@ tbody td{padding:8px 12px;color:var(--tx);white-space:nowrap}
 .bxls{padding:5px 10px;background:white;border:1.5px solid var(--vd);color:var(--vd);border-radius:6px;font-size:11px;font-weight:600;cursor:pointer}
 .bxls:hover{background:var(--vd);color:white}
 .bm{display:flex;align-items:center;gap:5px;padding:7px 12px;background:linear-gradient(135deg,var(--az),var(--cel));color:white;border:none;border-radius:7px;font-family:'Outfit',sans-serif;font-size:12px;font-weight:600;cursor:pointer}
-
-/* MODAL */
 .mo{position:fixed;inset:0;background:rgba(24,30,66,.5);backdrop-filter:blur(4px);z-index:1000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
 .mo.show{opacity:1;pointer-events:all}
 .md{background:white;border-radius:16px;padding:28px;width:520px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 24px 60px rgba(24,30,66,.3);transform:scale(.95);transition:transform .2s}
@@ -139,8 +127,6 @@ tbody td{padding:8px 12px;color:var(--tx);white-space:nowrap}
 .ff{grid-column:1/-1}
 .ua{border:2px dashed var(--bo);border-radius:var(--ra);padding:32px 20px;text-align:center;cursor:pointer;transition:all .2s;background:var(--bg)}
 .ua:hover{border-color:var(--vd);background:var(--va)}
-
-/* MISC */
 .tc-c{position:fixed;top:16px;right:16px;z-index:9999;display:flex;flex-direction:column;gap:8px}
 .t{background:var(--pu);color:white;padding:12px 16px;border-radius:10px;font-size:13px;box-shadow:var(--sh);animation:tin .3s ease forwards;max-width:320px;display:flex;align-items:center;gap:8px}
 .t.s{background:var(--vd)}.t.e{background:#C0392B}.t.w{background:#E67E22}
@@ -153,13 +139,13 @@ tbody td{padding:8px 12px;color:var(--tx);white-space:nowrap}
 .spi{width:22px;height:22px;border:3px solid var(--bo);border-top-color:var(--vd);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .pag-info{font-size:11px;color:var(--ts);padding:8px 14px;border-top:1px solid var(--bo)}
-.search-input{flex:1;min-width:200px;padding:7px 10px;border:1.5px solid var(--bo);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12px;outline:none}
+.search-input{flex:1;min-width:180px;padding:7px 10px;border:1.5px solid var(--bo);border-radius:7px;font-family:'DM Sans',sans-serif;font-size:12px;outline:none}
 .search-input:focus{border-color:var(--vd)}
 .buscar-box{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:12px;padding:12px 16px;background:white;border-radius:var(--ra);border:1px solid var(--bo)}
+.esc-badge{display:inline-block;padding:3px 10px;background:var(--pu);color:white;border-radius:20px;font-size:10px;font-weight:600;margin-left:8px}
 </style>
 </head>
 <body>
-
 <div id="ls">
   <div class="lc">
     <div class="ll"><div class="li">🏥</div><div class="lt"><h1>Sanatorio de la Cañada</h1><p>Sistema de Gestión Clínica</p></div></div>
@@ -190,6 +176,10 @@ tbody td{padding:8px 12px;color:var(--tx);white-space:nowrap}
         <div class="kpi-s"><div class="kpi-sl">Sin Presc.</div><div class="kpi-sv" id="ks-sp">—</div></div>
         <div class="kpi-s"><div class="kpi-sl">Total Presc.</div><div class="kpi-sv" id="ks-tp">—</div></div>
         <div class="kpi-s"><div class="kpi-sl">Ratio P/C</div><div class="kpi-sv" id="ks-r">—</div><div class="kpi-ss" id="ks-rx">—</div></div>
+        <div class="kpi-chart" id="kpi-chart-wrap" style="display:none">
+          <div class="kpi-sl">Evolución mensual — % Con Presc. y Ratio P/C</div>
+          <canvas id="kpi-chart" height="55"></canvas>
+        </div>
       </div>
     </div>
     <div class="pc" id="pc"></div>
@@ -199,7 +189,7 @@ tbody td{padding:8px 12px;color:var(--tx);white-space:nowrap}
 <!-- MODAL MAIL -->
 <div class="mo" id="mo-mail"><div class="md">
   <div class="mdt">📧 Enviar reporte</div>
-  <div class="mds">El análisis actual será enviado a los destinatarios</div>
+  <div class="mds">El análisis será enviado desde <strong>Sanatorio de la Cañada</strong></div>
   <div class="fg"><label class="fl">Destinatarios (separados por coma)</label><input type="text" id="m-dest" class="fi"></div>
   <div class="fg"><label class="fl">Asunto</label><input type="text" id="m-asunto" class="fi"></div>
   <div class="mdf"><button class="bc" onclick="cerrarModal('mo-mail')">Cancelar</button><button class="bp" onclick="enviarMail()">📤 Enviar</button></div>
@@ -215,12 +205,9 @@ tbody td{padding:8px 12px;color:var(--tx);white-space:nowrap}
     <div class="fg ff"><label class="fl">Contraseña <span style="font-size:10px;color:var(--ts)">(vacío = no cambiar)</span></label><input type="password" id="u-pwd" class="fi" placeholder="Nueva contraseña"></div>
     <div class="fg"><label class="fl">Rol</label>
       <select id="u-rol" class="fi">
-        <option value="profesional">Profesional</option>
-        <option value="jefe_servicio">Jefe de Servicio</option>
-        <option value="operaciones_medicas">Operaciones Médicas</option>
-        <option value="gerente">Gerente</option>
-        <option value="directorio">Directorio</option>
-        <option value="admin">Admin</option>
+        <option value="profesional">Profesional</option><option value="jefe_servicio">Jefe de Servicio</option>
+        <option value="operaciones_medicas">Operaciones Médicas</option><option value="gerente">Gerente</option>
+        <option value="directorio">Directorio</option><option value="admin">Admin</option>
       </select>
     </div>
     <div class="fg"><label class="fl">Matrícula</label><input type="text" id="u-mat" class="fi" placeholder="Ej: 44037"></div>
@@ -239,10 +226,7 @@ tbody td{padding:8px 12px;color:var(--tx);white-space:nowrap}
   <div class="mdt">📤 Cargar archivo Excel</div>
   <div class="mds">Atenciones (todos los centros) o prescripciones (un centro por archivo)</div>
   <div class="fg"><label class="fl">Tipo</label>
-    <select id="up-tipo" class="fi">
-      <option value="prescripciones">Prescripciones</option>
-      <option value="atenciones">Atenciones</option>
-    </select>
+    <select id="up-tipo" class="fi"><option value="prescripciones">Prescripciones</option><option value="atenciones">Atenciones</option></select>
   </div>
   <div class="fg"><label class="fl">Centro (prescripciones)</label><select id="up-centro" class="fi"><option value="">— Sin asignar —</option></select></div>
   <div class="fg"><label class="fl">Archivo</label>
@@ -269,14 +253,17 @@ tbody td{padding:8px 12px;color:var(--tx);white-space:nowrap}
 var API = 'https://conducta-prescriptiva-dashboard-production.up.railway.app';
 var token = localStorage.getItem('cp_token') || null;
 var user = JSON.parse(localStorage.getItem('cp_user') || 'null');
-var view = '', fd = {}, analisisData = null, escActivo = 'esc1', lastHtml = '', editUid = null, perActivo = '';
+var view = '', fd = {}, analisisData = null, escActivo = 'esc1', editUid = null, perActivo = '';
+var kpiChart = null;
+
+// Estado compartido de filtros entre vistas
+var filtrosGlobales = { desde: '', hasta: '', centros: '', servicios: '' };
 
 window.onload = function() { if (token && user) showApp(); };
 
 // AUTH
 async function doLogin() {
-  var em = document.getElementById('lin-email').value.trim();
-  var pw = document.getElementById('lin-pwd').value;
+  var em = document.getElementById('lin-email').value.trim(), pw = document.getElementById('lin-pwd').value;
   var btn = document.getElementById('blg'), err = document.getElementById('lerr');
   if (!em || !pw) { err.textContent = 'Completá email y contraseña'; err.style.display = 'block'; return; }
   btn.disabled = true; btn.textContent = 'Ingresando...'; err.style.display = 'none';
@@ -294,40 +281,36 @@ document.addEventListener('keydown', function(e) { if (e.key === 'Enter' && docu
 function doLogout() {
   token = null; user = null;
   localStorage.removeItem('cp_token'); localStorage.removeItem('cp_user');
-  document.getElementById('app').style.display = 'none';
-  document.getElementById('ls').style.display = 'flex';
+  document.getElementById('app').style.display = 'none'; document.getElementById('ls').style.display = 'flex';
 }
 async function apiFetch(path, opts) {
   opts = opts || {};
   var r = await fetch(API + path, Object.assign({}, opts, { headers: Object.assign({ 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }, opts.headers || {}) }));
-  if (r.status === 401) { doLogout(); return null; }
-  return r;
+  if (r.status === 401) { doLogout(); return null; } return r;
 }
 
 // LAYOUT
 function showApp() {
-  document.getElementById('ls').style.display = 'none';
-  document.getElementById('app').style.display = 'flex';
+  document.getElementById('ls').style.display = 'none'; document.getElementById('app').style.display = 'flex';
   document.getElementById('sb-nombre').textContent = user.nombre + ' ' + user.apellido;
   document.getElementById('sb-email').textContent = user.email;
   var rb = document.getElementById('sb-rol'); rb.textContent = rolLbl(user.rol); rb.className = 'rb rb-' + user.rol;
-  buildNav();
-  cargarFiltros().then(function() { nav('conducta'); });
+  buildNav(); cargarFiltros().then(function() { nav('conducta'); });
 }
-function rolLbl(r) { return ({ admin: 'Admin', directorio: 'Directorio', gerente: 'Gerente', operaciones_medicas: 'Op. Médicas', jefe_servicio: 'Jefe Servicio', profesional: 'Profesional' })[r] || r; }
+function rolLbl(r) { return ({ admin:'Admin', directorio:'Directorio', gerente:'Gerente', operaciones_medicas:'Op. Médicas', jefe_servicio:'Jefe Servicio', profesional:'Profesional' })[r] || r; }
 function buildNav() {
   var sbn = document.getElementById('sbn'), rol = user.rol;
   var its = [
-    { id: 'conducta', icon: '📊', lbl: 'Análisis Prescriptivo', roles: ['admin', 'directorio', 'gerente', 'operaciones_medicas', 'jefe_servicio', 'profesional'] },
-    { id: 'detalle', icon: '🔎', lbl: 'Detalle Prescripciones', roles: ['admin', 'directorio', 'gerente', 'operaciones_medicas', 'jefe_servicio', 'profesional'] },
-    { id: 'uploads', icon: '📤', lbl: 'Cargar Datos', roles: ['admin', 'directorio', 'gerente', 'operaciones_medicas'] },
-    { id: 'usuarios', icon: '👥', lbl: 'Usuarios', roles: ['admin', 'operaciones_medicas'] },
-    { id: 'auditoria', icon: '🔍', lbl: 'Auditoría', roles: ['admin'] }
+    { id:'conducta', icon:'📊', lbl:'Análisis Prescriptivo', roles:['admin','directorio','gerente','operaciones_medicas','jefe_servicio','profesional'] },
+    { id:'detalle',  icon:'🔎', lbl:'Detalle Prescripciones', roles:['admin','directorio','gerente','operaciones_medicas','jefe_servicio','profesional'] },
+    { id:'uploads',  icon:'📤', lbl:'Cargar Datos', roles:['admin','directorio','gerente','operaciones_medicas'] },
+    { id:'usuarios', icon:'👥', lbl:'Usuarios', roles:['admin','operaciones_medicas'] },
+    { id:'auditoria',icon:'🔍', lbl:'Auditoría', roles:['admin'] }
   ];
   sbn.innerHTML = ''; var sDash = false, sAdm = false;
   its.forEach(function(i) {
     if (i.roles.indexOf(rol) < 0) return;
-    if (['uploads', 'usuarios', 'auditoria'].indexOf(i.id) >= 0 && !sAdm) { sbn.innerHTML += '<div class="nst">Administración</div>'; sAdm = true; }
+    if (['uploads','usuarios','auditoria'].indexOf(i.id) >= 0 && !sAdm) { sbn.innerHTML += '<div class="nst">Administración</div>'; sAdm = true; }
     else if (!sDash && !sAdm) { sbn.innerHTML += '<div class="nst">Dashboards</div>'; sDash = true; }
     sbn.innerHTML += '<div class="ni" id="ni-' + i.id + '" onclick="nav(\'' + i.id + '\')"><span class="nic">' + i.icon + '</span>' + i.lbl + '</div>';
   });
@@ -336,9 +319,9 @@ function nav(v) {
   view = v;
   document.querySelectorAll('.ni').forEach(function(e) { e.classList.remove('active'); });
   var el = document.getElementById('ni-' + v); if (el) el.classList.add('active');
-  var tit = { conducta: 'Análisis de Conducta Prescriptiva', detalle: 'Detalle de Prescripciones', uploads: 'Carga de Datos', usuarios: 'Gestión de Usuarios', auditoria: 'Auditoría del Sistema' };
+  var tit = { conducta:'Análisis de Conducta Prescriptiva', detalle:'Detalle de Prescripciones', uploads:'Carga de Datos', usuarios:'Gestión de Usuarios', auditoria:'Auditoría del Sistema' };
   document.getElementById('tbt').textContent = tit[v] || v;
-  var canMail = ['admin', 'directorio', 'gerente', 'operaciones_medicas'].indexOf(user.rol) >= 0;
+  var canMail = ['admin','directorio','gerente','operaciones_medicas'].indexOf(user.rol) >= 0;
   document.getElementById('btn-mail').style.display = (v === 'conducta' && canMail) ? 'flex' : 'none';
   document.getElementById('kpi-strip').style.display = (v === 'conducta' && analisisData && !analisisData.vacio) ? 'flex' : 'none';
   cargarFiltros().then(function() {
@@ -355,19 +338,20 @@ async function cargarFiltros() {
 
 // MULTISELECT
 var msState = {};
-function initMs(id, opts, ph) {
-  msState[id] = { opts: opts, sel: [], ph: ph };
+function initMs(id, opts, ph, presel) {
+  presel = presel || [];
+  msState[id] = { opts: opts, sel: presel.slice(), ph: ph };
   renderMs(id);
 }
 function renderMs(id) {
   var st = msState[id]; if (!st) return;
   var wrap = document.getElementById(id); if (!wrap) return;
-  var lbl = st.sel.length === 0 ? st.ph : (st.sel.length === st.opts.length ? 'Todos (' + st.opts.length + ')' : st.sel.length + ' seleccionado' + (st.sel.length > 1 ? 's' : ''));
+  var lbl = st.sel.length === 0 ? st.ph : (st.sel.length === st.opts.length && st.opts.length > 0 ? 'Todos (' + st.opts.length + ')' : st.sel.length + ' seleccionado' + (st.sel.length > 1 ? 's' : ''));
   var items = st.opts.map(function(o) {
     var chk = st.sel.indexOf(o.v) >= 0 ? ' checked' : '';
-    return '<div class="ms-item" onclick="toggleMsItem(\'' + id + '\',\'' + o.v.replace(/'/g, '') + '\',this)"><input type="checkbox"' + chk + ' onclick="event.stopPropagation()"><span>' + o.l + '</span></div>';
+    return '<div class="ms-item" onclick="toggleMsItem(\'' + id + '\',\'' + o.v.replace(/'/g,'&#39;') + '\',this)"><input type="checkbox"' + chk + ' onclick="event.stopPropagation()"><span>' + o.l + '</span></div>';
   }).join('');
-  wrap.innerHTML = '<button class="ms-btn" onclick="toggleMsDd(\'' + id + '\')">' + lbl + ' <span style="opacity:.5;font-size:9px">▼</span></button>'
+  wrap.innerHTML = '<button class="ms-btn" onclick="toggleMsDd(\'' + id + '\')">' + lbl + '<span style="opacity:.5;font-size:9px;margin-left:4px">▼</span></button>'
     + '<div class="ms-dd" id="' + id + '-dd"><div class="ms-all" onclick="toggleAllMs(\'' + id + '\')">☑ Todos / Ninguno</div>' + items + '</div>';
 }
 function toggleMsDd(id) {
@@ -385,21 +369,20 @@ function toggleMsItem(id, val, item) {
   if (idx >= 0) { st.sel.splice(idx, 1); if (cb) cb.checked = false; }
   else { st.sel.push(val); if (cb) cb.checked = true; }
   var wrap = document.getElementById(id);
-  var lbl = st.sel.length === 0 ? st.ph : (st.sel.length === st.opts.length ? 'Todos (' + st.opts.length + ')' : st.sel.length + ' seleccionado' + (st.sel.length > 1 ? 's' : ''));
+  var lbl = st.sel.length === 0 ? st.ph : (st.sel.length === st.opts.length && st.opts.length > 0 ? 'Todos (' + st.opts.length + ')' : st.sel.length + ' seleccionado' + (st.sel.length > 1 ? 's' : ''));
   var btn = wrap ? wrap.querySelector('.ms-btn') : null;
-  if (btn) btn.childNodes[0].textContent = lbl;
+  if (btn) { btn.childNodes[0].textContent = lbl; }
 }
 function toggleAllMs(id) {
   var st = msState[id]; if (!st) return;
   if (st.sel.length === st.opts.length) st.sel = [];
   else st.sel = st.opts.map(function(o) { return o.v; });
   renderMs(id);
-  var dd = document.getElementById(id + '-dd');
-  if (dd) dd.classList.add('open');
+  var dd = document.getElementById(id + '-dd'); if (dd) dd.classList.add('open');
 }
 function getMsVal(id) {
   var st = msState[id];
-  return (st && st.sel.length) ? st.sel.join(',') : '';
+  return (st && st.sel && st.sel.length) ? st.sel.join(',') : '';
 }
 document.addEventListener('click', function(e) {
   if (!e.target.closest('.ms-wrap')) {
@@ -422,6 +405,16 @@ function mesAct(off) {
   return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
 }
 
+// Reconstruir selecciones previas al volver al análisis
+function preselCentros() {
+  if (!filtrosGlobales.centros) return [];
+  return filtrosGlobales.centros.split(',').filter(Boolean);
+}
+function preselServicios() {
+  if (!filtrosGlobales.servicios) return [];
+  return filtrosGlobales.servicios.split(',').filter(Boolean);
+}
+
 // CONDUCTA
 function conducta() {
   var pc = document.getElementById('pc');
@@ -431,30 +424,37 @@ function conducta() {
     + '<button class="per-btn' + (perActivo === '6m' ? ' active' : '') + '" id="pb-6m" onclick="setPer(\'6m\')">Semestre</button>'
     + '<button class="per-btn' + (perActivo === '1a' ? ' active' : '') + '" id="pb-1a" onclick="setPer(\'1a\')">Año</button>'
     + '</div>';
+  var desdeVal = filtrosGlobales.desde || mesAct(-1);
+  var hastaVal = filtrosGlobales.hasta || mesAct(0);
   pc.innerHTML = '<div class="fb"><div class="fb-row">'
     + '<div class="fgr"><span class="fla">Período rápido</span>' + perBtns + '</div>'
-    + '<div class="fgr"><span class="fla">Desde</span><input type="month" id="f-desde" class="fin" value="' + mesAct(-1) + '"></div>'
-    + '<div class="fgr"><span class="fla">Hasta</span><input type="month" id="f-hasta" class="fin" value="' + mesAct(0) + '"></div>'
+    + '<div class="fgr"><span class="fla">Desde</span><input type="month" id="f-desde" class="fin" value="' + desdeVal + '"></div>'
+    + '<div class="fgr"><span class="fla">Hasta</span><input type="month" id="f-hasta" class="fin" value="' + hastaVal + '"></div>'
     + '<div class="fgr"><span class="fla">Centros</span><div class="ms-wrap" id="ms-centros"></div></div>'
     + '<div class="fgr"><span class="fla">Servicios</span><div class="ms-wrap" id="ms-servicios"></div></div>'
     + '<button class="bf" onclick="cargarConducta()">🔍 Analizar</button>'
     + '</div></div>'
-    + '<div style="background:white;border-radius:var(--ra);border:1px solid var(--bo);padding:50px 32px;text-align:center" id="conducta-body">'
+    + '<div id="conducta-body">'
+    + '<div style="background:white;border-radius:var(--ra);border:1px solid var(--bo);padding:50px 32px;text-align:center">'
     + '<div style="font-size:48px;margin-bottom:16px">📊</div>'
     + '<div style="font-family:\'Outfit\',sans-serif;font-size:18px;font-weight:700;color:var(--pu);margin-bottom:6px">Análisis de Conducta Prescriptiva</div>'
     + '<div style="color:var(--ts);font-size:13px;margin-bottom:24px">Seleccioná el período y los filtros, luego hacé click en <strong>Analizar</strong></div>'
     + '<div style="display:inline-flex;gap:20px;background:var(--bg);border-radius:10px;padding:16px 22px;font-size:12px;color:var(--ts)">'
     + '<div>📋 <strong>ESC 1:</strong> Todos</div><div>🚫 <strong>ESC 2:</strong> Sin PAMI</div><div>🔬 <strong>ESC 3:</strong> Sin PAMI ni Lab</div>'
-    + '</div></div>';
-  // Init multiselects
-  initMs('ms-centros', (fd.centros || []).map(function(c) { return { v: String(c.id), l: c.nombre }; }), 'Todos los centros');
-  initMs('ms-servicios', (fd.servicios || []).map(function(s) { return { v: s, l: s }; }), 'Todos los servicios');
+    + '</div></div></div>';
+  // Init multiselects con preselección
+  initMs('ms-centros', (fd.centros || []).map(function(c) { return { v: String(c.id), l: c.nombre }; }), 'Todos los centros', preselCentros());
+  initMs('ms-servicios', (fd.servicios || []).map(function(s) { return { v: s, l: s }; }), 'Todos los servicios', preselServicios());
+  // Si hay datos previos, re-renderizar
+  if (analisisData && !analisisData.vacio) renderConducta();
 }
 
 async function cargarConducta() {
   var desde = (document.getElementById('f-desde') || {}).value || '';
   var hasta = (document.getElementById('f-hasta') || {}).value || '';
   var centros = getMsVal('ms-centros'), servicios = getMsVal('ms-servicios');
+  // Guardar filtros globales
+  filtrosGlobales = { desde: desde, hasta: hasta, centros: centros, servicios: servicios };
   var p = new URLSearchParams();
   if (desde) p.append('periodo_desde', desde);
   if (hasta) p.append('periodo_hasta', hasta);
@@ -480,13 +480,13 @@ async function cargarConducta() {
   analisisData = await r.json();
   if (analisisData.vacio) {
     if (body) body.innerHTML = '<div class="emp"><div class="emp-i">📭</div><div class="emp-t">Sin datos</div><div class="emp-s">' + (analisisData.mensaje || '') + '</div></div>';
-    document.getElementById('kpi-strip').style.display = 'none';
-    return;
+    document.getElementById('kpi-strip').style.display = 'none'; return;
   }
   escActivo = 'esc1';
   renderConducta();
   document.getElementById('kpi-strip').style.display = 'flex';
   actualizarKpis();
+  renderKpiChart();
 }
 
 function actualizarKpis() {
@@ -501,69 +501,100 @@ function actualizarKpis() {
   document.getElementById('ks-rx').textContent = esc.sem_ratio + ' por consulta';
 }
 
+function renderKpiChart() {
+  var evol = analisisData && analisisData.evolucion;
+  if (!evol || evol.length < 2) { document.getElementById('kpi-chart-wrap').style.display = 'none'; return; }
+  document.getElementById('kpi-chart-wrap').style.display = 'block';
+  var labels = evol.map(function(e) { return e.periodo; });
+  var pcts   = evol.map(function(e) { return e.pct_con_presc; });
+  var ratios = evol.map(function(e) { return e.ratio_pc; });
+  if (kpiChart) { kpiChart.destroy(); kpiChart = null; }
+  kpiChart = new Chart(document.getElementById('kpi-chart'), {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        { label: '% Con Presc.', data: pcts, borderColor: '#1DBC61', backgroundColor: 'rgba(29,188,97,.08)', tension: 0.3, pointRadius: 3, pointBackgroundColor: '#1DBC61', yAxisID: 'y1' },
+        { label: 'Ratio P/C',    data: ratios, borderColor: '#47B0FE', backgroundColor: 'rgba(71,176,254,.08)', tension: 0.3, pointRadius: 3, pointBackgroundColor: '#47B0FE', yAxisID: 'y2' }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 10, padding: 6 } } },
+      scales: {
+        x:  { ticks: { font: { size: 9 } }, grid: { display: false } },
+        y1: { type: 'linear', position: 'left',  ticks: { font: { size: 9 } }, title: { display: false } },
+        y2: { type: 'linear', position: 'right', ticks: { font: { size: 9 } }, grid: { drawOnChartArea: false } }
+      }
+    }
+  });
+}
+
 function renderConducta() {
-  var d = analisisData, body = document.getElementById('conducta-body');
-  if (!body) return;
+  var d = analisisData, body = document.getElementById('conducta-body'); if (!body) return;
   var ENMS = ['ESC 1 — COMPLETO', 'ESC 2 — SIN PAMI', 'ESC 3 — SIN PAMI NI LAB'];
   var EKEYS = ['esc1', 'esc2', 'esc3'];
   var eidx = EKEYS.indexOf(escActivo);
-  // Tabs
   var tabs = '<div class="esc-sel">' + EKEYS.map(function(e, i) { return '<button class="esc-btn' + (escActivo === e ? ' active' : '') + '" onclick="setEsc(\'' + e + '\')">' + ENMS[i] + '</button>'; }).join('') + '</div>';
-  // Resumen
   var resRows = EKEYS.map(function(e, i) { var m = d.resumen[e]; return '<tr><td><strong>' + ENMS[i] + '</strong></td><td>' + fmt(m.consultas) + '</td><td>' + fmt(m.con_presc) + '</td><td>' + fmt(m.sin_presc) + '</td><td>' + m.sem_pct + ' ' + m.pct_con_presc + '%</td><td>' + fmt(m.total_presc) + '</td><td class="rc">' + m.sem_ratio + ' ' + m.ratio_pc + '</td></tr>'; }).join('');
-  var resTab = mkTable('tbl-res', 'Resumen por escenario', '', ['Escenario', 'Consultas', 'Con Presc.', 'Sin Presc.', '% Con Presc.', 'Total Presc.', 'Ratio P/C'], resRows);
-  // Por servicio
-  var svcRows = (d.por_servicio || []).map(function(s) { var m = s[escActivo]; return '<tr><td><strong>' + (s.servicio || '—') + '</strong></td><td>' + fmt(m.consultas) + '</td><td>' + fmt(m.con_presc) + '</td><td>' + m.sem_pct + ' ' + m.pct_con_presc + '%</td><td>' + fmt(m.total_presc) + '</td><td class="rc">' + m.sem_ratio + ' ' + m.ratio_pc + '</td></tr>'; }).join('') || '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--ts)">Sin datos</td></tr>';
-  var svcTab = mkTable('tbl-svc', 'Por servicio — ' + ENMS[eidx], (d.por_servicio || []).length + ' servicios', ['Servicio', 'Consultas', 'Con Presc.', '% Con Presc.', 'Total Presc.', 'Ratio P/C'], svcRows);
-  // Por profesional
-  var profRows = (d.por_profesional || []).map(function(p) { var m = p[escActivo]; return '<tr><td><strong>' + (p.nombre_medico || '—') + '</strong></td><td>' + (p.matricula || '—') + '</td><td>' + (p.servicio || '—') + '</td><td>' + fmt(m.consultas) + '</td><td>' + fmt(m.con_presc) + '</td><td>' + m.sem_pct + ' ' + m.pct_con_presc + '%</td><td>' + fmt(m.total_presc) + '</td><td class="rc">' + m.sem_ratio + ' ' + m.ratio_pc + '</td></tr>'; }).join('') || '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--ts)">Sin datos</td></tr>';
-  var profTab = mkTable('tbl-prof', 'Por profesional — ' + ENMS[eidx], (d.por_profesional || []).length + ' profesionales', ['Profesional', 'Matrícula', 'Servicio', 'Consultas', 'Con Presc.', '% Con Presc.', 'Total Presc.', 'Ratio P/C'], profRows);
-  // Tipos ESC3
+  var svcRows = (d.por_servicio || []).map(function(s) { var m = s[escActivo]; return '<tr><td><strong>' + (s.servicio || '—') + '</strong></td><td>' + fmt(m.consultas) + '</td><td>' + fmt(m.con_presc) + '</td><td>' + m.sem_pct + ' ' + m.pct_con_presc + '%</td><td>' + fmt(m.total_presc) + '</td><td class="rc">' + m.sem_ratio + ' ' + m.ratio_pc + '</td></tr>'; }).join('') || emptyRow(6);
+  var profRows = (d.por_profesional || []).map(function(p) { var m = p[escActivo]; return '<tr><td><strong>' + (p.nombre_medico || '—') + '</strong></td><td>' + (p.matricula || '—') + '</td><td>' + (p.servicio || '—') + '</td><td>' + fmt(m.consultas) + '</td><td>' + fmt(m.con_presc) + '</td><td>' + m.sem_pct + ' ' + m.pct_con_presc + '%</td><td>' + fmt(m.total_presc) + '</td><td class="rc">' + m.sem_ratio + ' ' + m.ratio_pc + '</td></tr>'; }).join('') || emptyRow(8);
   var tiposTab = '';
   if ((d.tipos_svc_esc3 || []).length) {
     var tiposRows = '';
-    d.tipos_svc_esc3.forEach(function(s) {
-      s.tipos.forEach(function(t, ti) {
-        tiposRows += '<tr>' + (ti === 0 ? '<td rowspan="' + s.tipos.length + '"><strong>' + s.label + '</strong></td><td rowspan="' + s.tipos.length + '">' + fmt(s.consultas) + '</td>' : '') + '<td><span class="bd ' + badgeCat(t.categoria) + '">' + t.categoria + '</span></td><td>' + fmt(t.prescripciones) + '</td><td class="rc">' + t.sem + ' ' + t.ratio + '</td></tr>';
-      });
-    });
+    d.tipos_svc_esc3.forEach(function(s) { s.tipos.forEach(function(t, ti) { tiposRows += '<tr>' + (ti === 0 ? '<td rowspan="' + s.tipos.length + '"><strong>' + s.label + '</strong></td><td rowspan="' + s.tipos.length + '">' + fmt(s.consultas) + '</td>' : '') + '<td><span class="bd ' + badgeCat(t.categoria) + '">' + t.categoria + '</span></td><td>' + fmt(t.prescripciones) + '</td><td class="rc">' + t.sem + ' ' + t.ratio + '</td></tr>'; }); });
     tiposTab = mkTable('tbl-tipos', 'Tipos de práctica por servicio — ESC 3', '', ['Servicio', 'Consultas', 'Categoría', 'Prescripciones', 'Ratio'], tiposRows);
   }
-  // Desvíos
-  var topRows = (d.desvios && d.desvios.top_prof || []).map(function(p) { return '<tr><td><strong>' + (p.profesional || '—') + '</strong></td><td>' + (p.matricula || '—') + '</td><td>' + (p.servicio || '—') + '</td><td>' + fmt(p.consultas) + '</td><td class="rc">' + p.sem + ' ' + p.ratio_pc + '</td></tr>'; }).join('') || '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--ts)">Sin datos</td></tr>';
+  var topRows = (d.desvios && d.desvios.top_prof || []).map(function(p) { return '<tr><td><strong>' + (p.profesional || '—') + '</strong></td><td>' + (p.matricula || '—') + '</td><td>' + (p.servicio || '—') + '</td><td>' + fmt(p.consultas) + '</td><td class="rc">' + p.sem + ' ' + p.ratio_pc + '</td></tr>'; }).join('') || emptyRow(5);
   var sinRows = (d.desvios && d.desvios.svc_sin_presc || []).map(function(s) { return '<tr><td>' + s.servicio + '</td><td>' + fmt(s.consultas) + '</td></tr>'; }).join('') || '<tr><td colspan="2" style="text-align:center;padding:20px;color:var(--ts)">Todos prescriben 🟢</td></tr>';
-  var desvios = '<div class="dg">' + mkTable('tbl-top', '🏆 Top prescriptores — ESC 3', 'mayor ratio', ['Profesional', 'Matrícula', 'Servicio', 'Consultas', 'Ratio P/C'], topRows) + mkTable('tbl-sinp', '⚠️ Sin prescripciones — ESC 3', '', ['Servicio', 'Consultas'], sinRows) + '</div>';
-  var nota = '<div style="background:white;border-radius:var(--ra);border:1px solid var(--bo);padding:12px 16px;font-size:11px;color:var(--ts)">Metodología: Join por Paciente + Profesional + Fecha. PAMI: obras sociales con "PAMI". ESC 3: excluye Laboratorio y vacunaciones. Ratio P/C 🔴&lt;0.5 | 🟡0.5–1.5 | 🟢≥1.5. % Con Presc 🔴&lt;20% | 🟡20–40% | 🟢≥40%.</div>';
-  body.innerHTML = tabs + resTab + svcTab + profTab + tiposTab + desvios + nota;
+  var nota = '<div style="background:white;border-radius:var(--ra);border:1px solid var(--bo);padding:12px 16px;font-size:11px;color:var(--ts)">Join por Paciente + Profesional + Fecha. PAMI: obras sociales con "PAMI". ESC 3: excluye Laboratorio y vacunaciones. Ratio 🔴&lt;0.5 | 🟡0.5–1.5 | 🟢≥1.5. %ConPresc 🔴&lt;20% | 🟡20–40% | 🟢≥40%.</div>';
+  body.innerHTML = tabs
+    + mkTable('tbl-res', 'Resumen por escenario', '', ['Escenario','Consultas','Con Presc.','Sin Presc.','% Con Presc.','Total Presc.','Ratio P/C'], resRows)
+    + mkTable('tbl-svc', 'Por servicio — ' + ENMS[eidx], (d.por_servicio || []).length + ' servicios', ['Servicio','Consultas','Con Presc.','% Con Presc.','Total Presc.','Ratio P/C'], svcRows)
+    + mkTable('tbl-prof', 'Por profesional — ' + ENMS[eidx], (d.por_profesional || []).length + ' profesionales', ['Profesional','Matrícula','Servicio','Consultas','Con Presc.','% Con Presc.','Total Presc.','Ratio P/C'], profRows)
+    + tiposTab
+    + '<div class="dg">'
+    + mkTable('tbl-top', '🏆 Top prescriptores — ESC 3', 'mayor ratio', ['Profesional','Matrícula','Servicio','Consultas','Ratio P/C'], topRows)
+    + mkTable('tbl-sinp', '⚠️ Sin prescripciones — ESC 3', '', ['Servicio','Consultas'], sinRows)
+    + '</div>' + nota;
   setTimeout(initSort, 80);
 }
 function setEsc(e) { escActivo = e; renderConducta(); actualizarKpis(); }
+function emptyRow(cols) { return '<tr><td colspan="' + cols + '" style="text-align:center;padding:24px;color:var(--ts)">Sin datos</td></tr>'; }
 
 // TABLA HELPER
 function mkTable(id, titulo, sub, cols, rowsHtml) {
   var thead = cols.map(function(c) { return '<th>' + c + '</th>'; }).join('');
-  return '<div class="tc"><div class="tch"><div class="tct">' + titulo + '</div><div class="tch-r">' + (sub ? '<span style="font-size:11px;color:var(--ts)">' + sub + '</span>' : '') + '<button class="bxls" onclick="exportXls(\'' + id + '\',\'' + titulo + '\')">⬇ XLS</button></div></div><div class="tw"><table id="' + id + '"><thead><tr>' + thead + '</tr></thead><tbody>' + rowsHtml + '</tbody></table></div></div>';
+  return '<div class="tc"><div class="tch"><div class="tct">' + titulo + '</div><div class="tch-r">'
+    + (sub ? '<span style="font-size:11px;color:var(--ts)">' + sub + '</span>' : '')
+    + '<button class="bxls" onclick="exportXls(\'' + id + '\',\'' + titulo.replace(/'/g,'') + '\')">⬇ XLS</button></div></div>'
+    + '<div class="tw"><table id="' + id + '"><thead><tr>' + thead + '</tr></thead><tbody>' + rowsHtml + '</tbody></table></div></div>';
 }
 
-// DETALLE
+// DETALLE — usa filtros globales
 function detalle() {
   var pc = document.getElementById('pc');
+  var desdeVal = filtrosGlobales.desde || mesAct(-1);
+  var hastaVal = filtrosGlobales.hasta || mesAct(0);
+  var escNom = ['ESC 1: Completo','ESC 2: Sin PAMI','ESC 3: Sin PAMI ni Lab'][['esc1','esc2','esc3'].indexOf(escActivo)] || 'ESC 1: Completo';
   pc.innerHTML = '<div class="buscar-box">'
-    + '<div class="fgr"><span class="fla">Desde</span><input type="month" id="d-desde" class="fin" value="' + mesAct(-1) + '"></div>'
-    + '<div class="fgr"><span class="fla">Hasta</span><input type="month" id="d-hasta" class="fin" value="' + mesAct(0) + '"></div>'
+    + '<div class="fgr"><span class="fla">Desde</span><input type="month" id="d-desde" class="fin" value="' + desdeVal + '"></div>'
+    + '<div class="fgr"><span class="fla">Hasta</span><input type="month" id="d-hasta" class="fin" value="' + hastaVal + '"></div>'
     + '<div class="fgr"><span class="fla">Centros</span><div class="ms-wrap" id="ms-dcentros"></div></div>'
     + '<div class="fgr"><span class="fla">Servicios</span><div class="ms-wrap" id="ms-dservicios"></div></div>'
     + '<div class="fgr"><span class="fla">Categoría</span><select id="d-cat" class="fse"><option value="">Todas</option>' + (fd.categorias || []).map(function(c) { return '<option value="' + c + '">' + c + '</option>'; }).join('') + '</select></div>'
     + '<div class="fgr"><span class="fla">Búsqueda libre</span><input type="text" id="d-buscar" class="search-input" placeholder="Código, práctica..."></div>'
     + '<button class="bf" onclick="cargarDetalle(0)">🔍 Buscar</button>'
     + '</div>'
-    + '<div style="display:flex;gap:8px;margin-bottom:12px">'
+    + '<div style="display:flex;gap:8px;align-items:center;margin-bottom:12px">'
     + '<button class="bp" onclick="cargarDetalle(0)" style="font-size:11px;padding:6px 12px">📋 Ver detalle</button>'
     + '<button class="bp" onclick="cargarFrecuencia()" style="font-size:11px;padding:6px 12px;background:linear-gradient(135deg,var(--vi),var(--az))">📊 Frecuencia por práctica</button>'
+    + '<span class="esc-badge">' + escNom + '</span>'
     + '</div>'
     + '<div id="detalle-body"><div class="emp"><div class="emp-i">🔎</div><div class="emp-t">Usá los filtros para buscar prescripciones</div></div></div>';
-  initMs('ms-dcentros', (fd.centros || []).map(function(c) { return { v: String(c.id), l: c.nombre }; }), 'Todos los centros');
-  initMs('ms-dservicios', (fd.servicios || []).map(function(s) { return { v: s, l: s }; }), 'Todos los servicios');
+  // Init con preselección de filtros globales
+  initMs('ms-dcentros', (fd.centros || []).map(function(c) { return { v: String(c.id), l: c.nombre }; }), 'Todos los centros', preselCentros());
+  initMs('ms-dservicios', (fd.servicios || []).map(function(s) { return { v: s, l: s }; }), 'Todos los servicios', preselServicios());
 }
 
 async function cargarDetalle(off) {
@@ -582,11 +613,13 @@ async function cargarDetalle(off) {
   if (!r || !r.ok) { body.innerHTML = '<div class="emp"><div class="emp-i">❌</div><div class="emp-t">Error</div></div>'; return; }
   var data = await r.json();
   if (!data.registros || !data.registros.length) { body.innerHTML = '<div class="emp"><div class="emp-i">📭</div><div class="emp-t">Sin resultados</div></div>'; return; }
-  var cols = ['Fecha', 'Período', 'Paciente', 'Obra Social', 'Matrícula', 'Prescriptor', 'Servicio', 'Código', 'Práctica', 'Categoría', 'Cant.'];
+  var escNom = ['ESC 1: Completo','ESC 2: Sin PAMI','ESC 3: Sin PAMI ni Lab'][['esc1','esc2','esc3'].indexOf(escActivo)] || '';
+  var cols = ['Fecha','Período','Paciente','Obra Social','Matrícula','Prescriptor','Servicio','Código','Práctica','Categoría','Cant.'];
   var rows = data.registros.map(function(reg) { return '<tr><td>' + (reg.fecha || '—') + '</td><td>' + (reg.periodo || '—') + '</td><td>' + (reg.paciente || '—') + '</td><td>' + (reg.obra_social || '—') + '</td><td>' + (reg.matricula || '—') + '</td><td>' + (reg.nombre_medico || '—') + '</td><td>' + (reg.servicio || '—') + '</td><td>' + (reg.codigo || '—') + '</td><td>' + (reg.practica || '—') + '</td><td><span class="bd ' + badgeCat(reg.categoria) + '">' + (reg.categoria || '—') + '</span></td><td>' + (reg.cantidad || 1) + '</td></tr>'; }).join('');
   var prev = off > 0 ? '<button class="per-btn" onclick="cargarDetalle(' + (off - 300) + ')">← Anterior</button>' : '';
   var next = (off + 300) < data.total ? '<button class="per-btn" onclick="cargarDetalle(' + (off + 300) + ')">Siguiente →</button>' : '';
-  body.innerHTML = mkTable('tbl-det', 'Prescripciones', fmt(data.total) + ' registros', cols, rows) + '<div class="pag-info">Mostrando ' + (off + 1) + '–' + Math.min(off + 300, data.total) + ' de ' + fmt(data.total) + ' &nbsp;' + prev + ' ' + next + '</div>';
+  body.innerHTML = mkTable('tbl-det', 'Prescripciones <span class="esc-badge">' + escNom + '</span>', fmt(data.total) + ' registros', cols, rows)
+    + '<div class="pag-info">Mostrando ' + (off + 1) + '–' + Math.min(off + 300, data.total) + ' de ' + fmt(data.total) + ' &nbsp;' + prev + ' ' + next + '</div>';
   setTimeout(initSort, 80);
 }
 
@@ -605,7 +638,7 @@ async function cargarFrecuencia() {
   if (!r || !r.ok) { body.innerHTML = '<div class="emp"><div class="emp-i">❌</div><div class="emp-t">Error</div></div>'; return; }
   var data = await r.json();
   if (!data || !data.length) { body.innerHTML = '<div class="emp"><div class="emp-i">📭</div><div class="emp-t">Sin resultados</div></div>'; return; }
-  var cols = ['Código', 'Práctica', 'Categoría', 'Veces', 'Prescriptores', 'Quiénes la prescriben'];
+  var cols = ['Código','Práctica','Categoría','Veces','Prescriptores','Quiénes la prescriben'];
   var rows = data.map(function(reg) { return '<tr><td>' + (reg.codigo || '—') + '</td><td>' + (reg.practica || '—') + '</td><td><span class="bd ' + badgeCat(reg.categoria) + '">' + (reg.categoria || '—') + '</span></td><td><strong>' + fmt(reg.veces) + '</strong></td><td>' + (reg.prescriptores || 0) + '</td><td style="font-size:11px;max-width:280px;white-space:normal">' + (reg.medicos || '—') + '</td></tr>'; }).join('');
   body.innerHTML = mkTable('tbl-freq', 'Frecuencia de prácticas', data.length + ' prácticas', cols, rows);
   setTimeout(initSort, 80);
@@ -620,8 +653,8 @@ async function uploads() {
   var sel = document.getElementById('up-centro');
   sel.innerHTML = '<option value="">— Sin asignar —</option>';
   (fd.centros || []).forEach(function(c) { sel.innerHTML += '<option value="' + c.id + '">' + c.nombre + '</option>'; });
-  var rows = data.map(function(u) { return '<tr><td>' + u.id + '</td><td style="max-width:200px;overflow:hidden;text-overflow:ellipsis">' + u.filename + '</td><td><span class="bd ' + (u.tipo === 'prescripciones' ? 'bdv' : 'bda') + '">' + u.tipo + '</span></td><td>' + (u.filas_procesadas || 0).toLocaleString() + '</td><td>' + (u.filas_error || 0) + '</td><td><span class="bd ' + (u.estado === 'ok' || u.estado === 'ok_con_errores' ? 'bdv' : u.estado === 'error' ? 'bdr' : 'bdc') + '">' + u.estado + '</span></td><td>' + (u.created_at ? new Date(u.created_at).toLocaleDateString('es-AR') : '—') + '</td><td><button onclick="confBorrar(' + u.id + ',\'' + u.filename.replace(/'/g, '') + '\')" style="background:none;border:none;cursor:pointer">🗑️</button></td></tr>'; }).join('') || '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--ts)">Sin archivos</td></tr>';
-  pc.innerHTML = '<div style="display:flex;justify-content:flex-end;margin-bottom:12px"><button class="bp" onclick="mostrarModal(\'mo-up\')">📤 Cargar nuevo archivo</button></div>' + mkTable('tbl-up', 'Archivos cargados', '', ['#', 'Archivo', 'Tipo', 'Filas OK', 'Errores', 'Estado', 'Fecha', ''], rows);
+  var rows = data.map(function(u) { return '<tr><td>' + u.id + '</td><td style="max-width:180px;overflow:hidden;text-overflow:ellipsis">' + u.filename + '</td><td><span class="bd ' + (u.tipo === 'prescripciones' ? 'bdv' : 'bda') + '">' + u.tipo + '</span></td><td>' + (u.filas_procesadas || 0).toLocaleString() + '</td><td>' + (u.filas_error || 0) + '</td><td><span class="bd ' + (u.estado === 'ok' || u.estado === 'ok_con_errores' ? 'bdv' : u.estado === 'error' ? 'bdr' : 'bdc') + '">' + u.estado + '</span></td><td>' + (u.created_at ? new Date(u.created_at).toLocaleDateString('es-AR') : '—') + '</td><td><button onclick="confBorrar(' + u.id + ',\'' + u.filename.replace(/'/g,'') + '\')" style="background:none;border:none;cursor:pointer">🗑️</button></td></tr>'; }).join('') || emptyRow(8);
+  pc.innerHTML = '<div style="display:flex;justify-content:flex-end;margin-bottom:12px"><button class="bp" onclick="mostrarModal(\'mo-up\')">📤 Cargar nuevo archivo</button></div>' + mkTable('tbl-up', 'Archivos cargados', '', ['#','Archivo','Tipo','Filas OK','Errores','Estado','Fecha',''], rows);
 }
 function onFileSelected(inp) { if (inp.files[0]) document.getElementById('up-fn').textContent = inp.files[0].name; }
 async function subirArchivo() {
@@ -653,15 +686,13 @@ async function usuarios() {
   pc.innerHTML = '<div class="sp"><div class="spi"></div>Cargando...</div>';
   var r = await apiFetch('/usuarios/'); if (!r || !r.ok) return;
   var data = await r.json();
-  var canC = ['admin', 'operaciones_medicas'].indexOf(user.rol) >= 0;
-  var rows = data.map(function(u) { return '<tr><td><strong>' + u.nombre + ' ' + u.apellido + '</strong></td><td>' + u.email + '</td><td><span class="rb rb-' + u.rol + '">' + rolLbl(u.rol) + '</span></td><td>' + (u.codigo_medico || '—') + '</td><td>' + ((u.centros || []).map(function(c) { return c.nombre; }).join(', ') || '—') + '</td><td><span class="bd ' + (u.activo ? 'bdv' : 'bdr') + '">' + (u.activo ? 'Activo' : 'Inactivo') + '</span></td>' + (canC ? '<td><button onclick="editarUsuario(' + u.id + ')" style="background:none;border:1.5px solid var(--bo);border-radius:5px;cursor:pointer;padding:3px 8px;font-size:11px">✏️</button></td>' : '') + '</tr>'; }).join('');
-  pc.innerHTML = (canC ? '<div style="display:flex;justify-content:flex-end;margin-bottom:12px"><button class="bp" onclick="nuevoUsuario()">➕ Nuevo usuario</button></div>' : '') + mkTable('tbl-usu', 'Usuarios', data.length + ' usuarios', ['Nombre', 'Email', 'Rol', 'Matrícula', 'Centros', 'Estado', canC ? 'Acciones' : ''], rows);
+  var canC = ['admin','operaciones_medicas'].indexOf(user.rol) >= 0;
+  var rows = data.map(function(u) { return '<tr><td><strong>' + u.nombre + ' ' + u.apellido + '</strong></td><td>' + u.email + '</td><td><span class="rb rb-' + u.rol + '">' + rolLbl(u.rol) + '</span></td><td>' + (u.codigo_medico || '—') + '</td><td>' + ((u.centros || []).map(function(c) { return c.nombre; }).join(', ') || '—') + '</td><td><span class="bd ' + (u.activo ? 'bdv' : 'bdr') + '">' + (u.activo ? 'Activo' : 'Inactivo') + '</span></td>' + (canC ? '<td><button onclick="editarUsuario(' + u.id + ')" style="background:none;border:1.5px solid var(--bo);border-radius:5px;cursor:pointer;padding:3px 8px;font-size:11px">✏️</button></td>' : '') + '</tr>'; }).join('') || emptyRow(canC ? 7 : 6);
+  pc.innerHTML = (canC ? '<div style="display:flex;justify-content:flex-end;margin-bottom:12px"><button class="bp" onclick="nuevoUsuario()">➕ Nuevo usuario</button></div>' : '') + mkTable('tbl-usu', 'Usuarios', data.length + ' usuarios', ['Nombre','Email','Rol','Matrícula','Centros','Estado', canC ? 'Acciones' : ''], rows);
 }
 function nuevoUsuario() {
-  editUid = null;
-  document.getElementById('mo-usu-t').textContent = 'Nuevo usuario';
-  document.getElementById('btn-usu-baja').style.display = 'none';
-  ['u-nom', 'u-ape', 'u-eml', 'u-pwd', 'u-mat', 'u-mrep'].forEach(function(id) { document.getElementById(id).value = ''; });
+  editUid = null; document.getElementById('mo-usu-t').textContent = 'Nuevo usuario'; document.getElementById('btn-usu-baja').style.display = 'none';
+  ['u-nom','u-ape','u-eml','u-pwd','u-mat','u-mrep'].forEach(function(id) { document.getElementById(id).value = ''; });
   document.getElementById('u-rol').value = 'profesional';
   var sel = document.getElementById('u-centros'); sel.innerHTML = '';
   (fd.centros || []).forEach(function(c) { sel.innerHTML += '<option value="' + c.id + '">' + c.nombre + '</option>'; });
@@ -669,17 +700,12 @@ function nuevoUsuario() {
 }
 async function editarUsuario(uid) {
   var r = await apiFetch('/usuarios/'); if (!r || !r.ok) return;
-  var data = await r.json(), u = data.find(function(x) { return x.id === uid; });
-  if (!u) return;
-  editUid = uid;
-  document.getElementById('mo-usu-t').textContent = 'Editar: ' + u.nombre + ' ' + u.apellido;
+  var data = await r.json(), u = data.find(function(x) { return x.id === uid; }); if (!u) return;
+  editUid = uid; document.getElementById('mo-usu-t').textContent = 'Editar: ' + u.nombre + ' ' + u.apellido;
   document.getElementById('btn-usu-baja').style.display = u.activo ? 'block' : 'none';
-  document.getElementById('u-nom').value = u.nombre || '';
-  document.getElementById('u-ape').value = u.apellido || '';
-  document.getElementById('u-eml').value = u.email || '';
-  document.getElementById('u-pwd').value = '';
-  document.getElementById('u-mat').value = u.codigo_medico || '';
-  document.getElementById('u-mrep').value = u.mail_reportes || '';
+  document.getElementById('u-nom').value = u.nombre || ''; document.getElementById('u-ape').value = u.apellido || '';
+  document.getElementById('u-eml').value = u.email || ''; document.getElementById('u-pwd').value = '';
+  document.getElementById('u-mat').value = u.codigo_medico || ''; document.getElementById('u-mrep').value = u.mail_reportes || '';
   document.getElementById('u-rol').value = u.rol || 'profesional';
   var centrosActuales = (u.centros || []).map(function(c) { return c.id; });
   var sel = document.getElementById('u-centros'); sel.innerHTML = '';
@@ -710,19 +736,19 @@ async function guardarUsuario() {
 
 // AUDITORÍA
 async function auditoria() {
-  var pc = document.getElementById('pc');
-  pc.innerHTML = '<div class="sp"><div class="spi"></div>Cargando...</div>';
+  var pc = document.getElementById('pc'); pc.innerHTML = '<div class="sp"><div class="spi"></div>Cargando...</div>';
   var r = await apiFetch('/audit/?limit=100'); if (!r || !r.ok) return;
   var data = await r.json();
-  var bm = { login: 'bdv', upload: 'bda', alta_usuario: 'bdv', baja_usuario: 'bdr', consulta_dashboard: 'bdc', descarga: 'bdp', envio_mail: 'bda', delete_upload: 'bdr' };
-  var rows = data.map(function(l) { return '<tr><td>' + (l.created_at ? new Date(l.created_at).toLocaleString('es-AR') : '—') + '</td><td>' + (l.usuario_id || '—') + '</td><td><span class="bd ' + (bm[l.accion] || 'bdc') + '">' + l.accion + '</span></td><td>' + (l.recurso || '—') + '</td><td>' + (l.ip || '—') + '</td></tr>'; }).join('');
-  pc.innerHTML = mkTable('tbl-audit', 'Log de auditoría', 'Últimas ' + data.length, ['Fecha/Hora', 'Usuario', 'Acción', 'Recurso', 'IP'], rows);
+  var bm = { login:'bdv', upload:'bda', alta_usuario:'bdv', baja_usuario:'bdr', consulta_dashboard:'bdc', descarga:'bdp', envio_mail:'bda', delete_upload:'bdr' };
+  var rows = data.map(function(l) { return '<tr><td>' + (l.created_at ? new Date(l.created_at).toLocaleString('es-AR') : '—') + '</td><td>' + (l.usuario_id || '—') + '</td><td><span class="bd ' + (bm[l.accion] || 'bdc') + '">' + l.accion + '</span></td><td>' + (l.recurso || '—') + '</td><td>' + (l.ip || '—') + '</td></tr>'; }).join('') || emptyRow(5);
+  pc.innerHTML = mkTable('tbl-audit', 'Log de auditoría', 'Últimas ' + data.length, ['Fecha/Hora','Usuario','Acción','Recurso','IP'], rows);
 }
 
 // MAIL
 function abrirMail() {
   document.getElementById('m-dest').value = user.email || '';
-  document.getElementById('m-asunto').value = 'Análisis Conducta Prescriptiva — ' + mesAct(0);
+  var escNom = ['ESC 1','ESC 2','ESC 3'][['esc1','esc2','esc3'].indexOf(escActivo)] || '';
+  document.getElementById('m-asunto').value = 'Análisis Conducta Prescriptiva — ' + mesAct(0) + ' — ' + escNom;
   mostrarModal('mo-mail');
 }
 async function enviarMail() {
@@ -733,35 +759,31 @@ async function enviarMail() {
   if (r && r.ok) { showToast('✅ Mail enviado', 's'); cerrarModal('mo-mail'); }
   else { var e = await r.json(); showToast((e && e.detail) || 'Error', 'e'); }
 }
-
 function genHtml() {
-  if (!analisisData || analisisData.vacio) return '<p>Sin datos</p>';
+  if (!analisisData || analisisData.vacio) return '<p>Sin datos para enviar.</p>';
   var d = analisisData;
-  var desde = (document.getElementById('f-desde') || {}).value || '—';
-  var hasta = (document.getElementById('f-hasta') || {}).value || '—';
+  var ENMS = ['ESC 1 — COMPLETO', 'ESC 2 — SIN PAMI', 'ESC 3 — SIN PAMI NI LAB'];
+  var EKEYS = ['esc1','esc2','esc3'];
+  var escNom = ENMS[EKEYS.indexOf(escActivo)] || '';
   var centrosSel = getMsVal('ms-centros');
   var centrosNom = centrosSel ? (fd.centros || []).filter(function(c) { return centrosSel.split(',').indexOf(String(c.id)) >= 0; }).map(function(c) { return c.nombre; }).join(', ') : 'Todos';
   var svcsNom = getMsVal('ms-servicios') || 'Todos';
-  var ENMS = ['COMPLETO', 'SIN PAMI', 'SIN PAMI NI LAB'];
-  var css = 'body{font-family:Arial,sans-serif;color:#181E42;max-width:900px;margin:0 auto;padding:20px}h1{color:#1D8D6B;border-bottom:2px solid #1DBC61;padding-bottom:8px}h3{color:#1D8D6B;margin:20px 0 8px}table{width:100%;border-collapse:collapse;margin-bottom:8px}th{background:#1D8D6B;color:white;padding:6px 10px;text-align:left;font-size:12px}td{padding:6px 10px;border:1px solid #ddd;font-size:12px}tr:nth-child(even){background:#f5faf7}.fi{background:#f8fdf8}';
-  var filtrosH = '<table class="fi"><thead><tr><th colspan="2">Filtros aplicados</th></tr></thead><tbody><tr><td><b>Período</b></td><td>' + desde + ' al ' + hasta + '</td></tr><tr><td><b>Centros</b></td><td>' + centrosNom + '</td></tr><tr><td><b>Servicios</b></td><td>' + svcsNom + '</td></tr></tbody></table>';
-  var resRows = ['esc1', 'esc2', 'esc3'].map(function(e, i) { var m = d.resumen[e]; return '<tr><td><b>' + ENMS[i] + '</b></td><td>' + m.consultas + '</td><td>' + m.con_presc + '</td><td>' + m.pct_con_presc + '%</td><td>' + m.total_presc + '</td><td>' + m.ratio_pc + '</td></tr>'; }).join('');
-  var resH = '<h3>Resumen por escenario</h3><table><thead><tr><th>Escenario</th><th>Consultas</th><th>Con Presc.</th><th>% Con Presc.</th><th>Total Presc.</th><th>Ratio P/C</th></tr></thead><tbody>' + resRows + '</tbody></table>';
-  var svcRows = (d.por_servicio || []).map(function(s) { var m = s.esc1; return '<tr><td>' + (s.servicio || '—') + '</td><td>' + m.consultas + '</td><td>' + m.con_presc + '</td><td>' + m.pct_con_presc + '%</td><td>' + m.total_presc + '</td><td>' + m.ratio_pc + '</td></tr>'; }).join('');
-  var svcH = '<h3>Por servicio</h3><table><thead><tr><th>Servicio</th><th>Consultas</th><th>Con Presc.</th><th>%</th><th>Total Presc.</th><th>Ratio P/C</th></tr></thead><tbody>' + svcRows + '</tbody></table>';
-  var profRows = (d.por_profesional || []).map(function(p) { var m = p.esc1; return '<tr><td>' + (p.nombre_medico || '—') + '</td><td>' + (p.matricula || '') + '</td><td>' + (p.servicio || '') + '</td><td>' + m.consultas + '</td><td>' + m.pct_con_presc + '%</td><td>' + m.ratio_pc + '</td></tr>'; }).join('');
-  var profH = '<h3>Por profesional</h3><table><thead><tr><th>Profesional</th><th>Matrícula</th><th>Servicio</th><th>Consultas</th><th>% Con Presc.</th><th>Ratio P/C</th></tr></thead><tbody>' + profRows + '</tbody></table>';
-  return '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>' + css + '</style></head><body><h1>🏥 Sanatorio de la Cañada — Conducta Prescriptiva</h1>' + filtrosH + resH + svcH + profH + '<p style="font-size:11px;color:#888;margin-top:20px;border-top:1px solid #eee;padding-top:8px">Generado: ' + new Date().toLocaleString('es-AR') + '</p></body></html>';
+  var css = 'body{font-family:Arial,sans-serif;color:#181E42;max-width:900px;margin:0 auto;padding:20px}h1{color:#1D8D6B;border-bottom:2px solid #1DBC61;padding-bottom:8px}h3{color:#1D8D6B;margin:20px 0 8px}table{width:100%;border-collapse:collapse;margin-bottom:8px}th{background:#1D8D6B;color:white;padding:6px 10px;text-align:left;font-size:12px}td{padding:6px 10px;border:1px solid #ddd;font-size:12px}tr:nth-child(even){background:#f5faf7}.fi-tbl{background:#f0faf5}.badge{background:#e3ffee;color:#1D8D6B;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600}';
+  var filtrosH = '<table class="fi-tbl"><thead><tr><th colspan="2">Filtros aplicados</th></tr></thead><tbody><tr><td><b>Período</b></td><td>' + (filtrosGlobales.desde||'—') + ' al ' + (filtrosGlobales.hasta||'—') + '</td></tr><tr><td><b>Centros</b></td><td>' + centrosNom + '</td></tr><tr><td><b>Servicios</b></td><td>' + svcsNom + '</td></tr><tr><td><b>Escenario activo</b></td><td><span class="badge">' + escNom + '</span></td></tr></tbody></table>';
+  var resRows = EKEYS.map(function(e,i){var m=d.resumen[e];return'<tr><td><b>'+ENMS[i]+'</b></td><td>'+m.consultas+'</td><td>'+m.con_presc+'</td><td>'+m.pct_con_presc+'%</td><td>'+m.total_presc+'</td><td>'+m.ratio_pc+'</td></tr>';}).join('');
+  var svcRows = (d.por_servicio||[]).map(function(s){var m=s.esc1;return'<tr><td>'+s.servicio+'</td><td>'+m.consultas+'</td><td>'+m.con_presc+'</td><td>'+m.pct_con_presc+'%</td><td>'+m.total_presc+'</td><td>'+m.ratio_pc+'</td></tr>';}).join('');
+  var profRows = (d.por_profesional||[]).map(function(p){var m=p.esc1;return'<tr><td>'+p.nombre_medico+'</td><td>'+(p.matricula||'')+'</td><td>'+(p.servicio||'')+'</td><td>'+m.consultas+'</td><td>'+m.pct_con_presc+'%</td><td>'+m.ratio_pc+'</td></tr>';}).join('');
+  return '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'+css+'</style></head><body><h1>🏥 Sanatorio de la Cañada — Conducta Prescriptiva</h1>'+filtrosH+'<h3>Resumen por escenario</h3><table><thead><tr><th>Escenario</th><th>Consultas</th><th>Con Presc.</th><th>% Con Presc.</th><th>Total Presc.</th><th>Ratio P/C</th></tr></thead><tbody>'+resRows+'</tbody></table><h3>Por servicio</h3><table><thead><tr><th>Servicio</th><th>Consultas</th><th>Con Presc.</th><th>%</th><th>Total Presc.</th><th>Ratio P/C</th></tr></thead><tbody>'+svcRows+'</tbody></table><h3>Por profesional</h3><table><thead><tr><th>Profesional</th><th>Matrícula</th><th>Servicio</th><th>Consultas</th><th>% Con Presc.</th><th>Ratio P/C</th></tr></thead><tbody>'+profRows+'</tbody></table><p style="font-size:11px;color:#888;margin-top:20px;border-top:1px solid #eee;padding-top:8px">Generado: '+new Date().toLocaleString('es-AR')+' — Sanatorio de la Cañada</p></body></html>';
 }
 
 // EXPORTAR XLS
 function exportXls(tableId, nombre) {
   var tbl = document.getElementById(tableId); if (!tbl) { showToast('Tabla no encontrada', 'w'); return; }
   var clone = tbl.cloneNode(true);
-  clone.querySelectorAll('span.bd,span.rc,strong').forEach(function(el) { el.parentNode.replaceChild(document.createTextNode(el.textContent), el); });
+  clone.querySelectorAll('span,strong,button').forEach(function(el) { el.parentNode.replaceChild(document.createTextNode(el.textContent), el); });
   var wb = XLSX.utils.book_new(), ws = XLSX.utils.table_to_sheet(clone);
   XLSX.utils.book_append_sheet(wb, ws, 'Datos');
-  XLSX.writeFile(wb, (nombre || tableId).replace(/[^a-zA-Z0-9 ]/g, '_') + '.xlsx');
+  XLSX.writeFile(wb, (nombre || tableId).replace(/[^a-zA-Z0-9 ]/g,'_') + '.xlsx');
   apiFetch('/dashboard/descargar?vista=' + tableId);
 }
 
@@ -772,16 +794,16 @@ function initSort() {
       th._so = 'none';
       th.onclick = function() {
         var asc = th._so !== 'asc';
-        tbl.querySelectorAll('thead th').forEach(function(h) { h._so = 'none'; h.classList.remove('asc', 'desc'); });
+        tbl.querySelectorAll('thead th').forEach(function(h) { h._so = 'none'; h.classList.remove('asc','desc'); });
         th._so = asc ? 'asc' : 'desc'; th.classList.add(asc ? 'asc' : 'desc');
         var tbody = tbl.querySelector('tbody'), rows = Array.from(tbody.querySelectorAll('tr'));
-        rows.sort(function(a, b) {
-          var ac = a.querySelectorAll('td')[ci], bc = b.querySelectorAll('td')[ci];
-          if (!ac || !bc) return 0;
-          var at = (ac.textContent || '').replace(/[🟢🟡🔴]/g, '').trim(), bt = (bc.textContent || '').replace(/[🟢🟡🔴]/g, '').trim();
-          var an = parseFloat(at.replace(/[^0-9.-]/g, '')), bn = parseFloat(bt.replace(/[^0-9.-]/g, ''));
-          if (!isNaN(an) && !isNaN(bn)) return asc ? an - bn : bn - an;
-          return asc ? at.localeCompare(bt, 'es') : bt.localeCompare(at, 'es');
+        rows.sort(function(a,b) {
+          var ac=a.querySelectorAll('td')[ci], bc=b.querySelectorAll('td')[ci];
+          if (!ac||!bc) return 0;
+          var at=(ac.textContent||'').replace(/[🟢🟡🔴]/g,'').trim(), bt=(bc.textContent||'').replace(/[🟢🟡🔴]/g,'').trim();
+          var an=parseFloat(at.replace(/[^0-9.-]/g,'')), bn=parseFloat(bt.replace(/[^0-9.-]/g,''));
+          if (!isNaN(an)&&!isNaN(bn)) return asc?an-bn:bn-an;
+          return asc?at.localeCompare(bt,'es'):bt.localeCompare(at,'es');
         });
         rows.forEach(function(r) { tbody.appendChild(r); });
       };
@@ -790,21 +812,21 @@ function initSort() {
 }
 
 // UTILS
-function fmt(n) { return (n || 0).toLocaleString('es-AR'); }
+function fmt(n) { return (n||0).toLocaleString('es-AR'); }
 function badgeCat(c) {
-  var m = { 'Laboratorio': 'bdc', 'Imágenes': 'bda', 'Cardiología': 'bdr', 'Interconsultas': 'bdo', 'Cirugía': 'bdr', 'Anatomía Patológica': 'bdc', 'Medicamentos': 'bdo', 'Fibroscopia - Neumo': 'bda', 'Fibroscopia - ORL': 'bdv', 'Fibroscopia - Gástrica': 'bdo', 'Fibroscopia - Urológica': 'bdp', 'Fibroscopia': 'bdp' };
+  var m = { 'Laboratorio':'bdc','Imágenes':'bda','Cardiología':'bdr','Interconsultas':'bdo','Cirugía':'bdr','Anatomía Patológica':'bdc','Medicamentos':'bdo','Fibroscopia - Neumo':'bda','Fibroscopia - ORL':'bdv','Fibroscopia - Gástrica':'bdo','Fibroscopia - Urológica':'bdp','Fibroscopia':'bdp' };
   return m[c] || 'bdv';
 }
 function mostrarModal(id) { document.getElementById(id).classList.add('show'); }
-function cerrarModal(id) { document.getElementById(id).classList.remove('show'); }
-document.querySelectorAll('.mo').forEach(function(o) { o.addEventListener('click', function(e) { if (e.target === o) o.classList.remove('show'); }); });
+function cerrarModal(id)  { document.getElementById(id).classList.remove('show'); }
+document.querySelectorAll('.mo').forEach(function(o) { o.addEventListener('click', function(e) { if (e.target===o) o.classList.remove('show'); }); });
 function showToast(msg, type) {
   type = type || '';
-  var tc = document.getElementById('tc-c'), t = document.createElement('div');
-  t.className = 't' + (type === 's' ? ' s' : type === 'e' ? ' e' : type === 'w' ? ' w' : '');
-  t.innerHTML = (type === 's' ? '✅' : type === 'e' ? '❌' : type === 'w' ? '⚠️' : 'ℹ️') + ' ' + msg;
+  var tc=document.getElementById('tc-c'), t=document.createElement('div');
+  t.className='t'+(type==='s'?' s':type==='e'?' e':type==='w'?' w':'');
+  t.innerHTML=(type==='s'?'✅':type==='e'?'❌':type==='w'?'⚠️':'ℹ️')+' '+msg;
   tc.appendChild(t);
-  setTimeout(function() { t.style.opacity = '0'; t.style.transition = 'opacity .3s'; setTimeout(function() { t.remove(); }, 300); }, 5000);
+  setTimeout(function(){t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(function(){t.remove();},300);},5000);
 }
 </script>
 </body>
