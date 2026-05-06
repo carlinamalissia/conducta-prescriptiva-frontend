@@ -59,7 +59,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
 .kpi-sv{font-family:'Outfit',sans-serif;font-size:18px;font-weight:800;color:var(--pu)}
 .kpi-ss{font-size:10px;color:var(--ts)}
 .kpi-chart{flex:1;min-width:300px;background:var(--bg);border-radius:8px;padding:8px 14px}
-.kpi-chart canvas{max-height:60px}
+.kpi-chart canvas{max-height:72px}
 .pc{flex:1;padding:20px 24px}
 .fb{background:white;border-radius:var(--ra);border:1px solid var(--bo);padding:12px 16px;margin-bottom:16px}
 .fb-row{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
@@ -323,7 +323,8 @@ function nav(v) {
   document.getElementById('tbt').textContent = tit[v] || v;
   var canMail = ['admin','directorio','gerente','operaciones_medicas'].indexOf(user.rol) >= 0;
   document.getElementById('btn-mail').style.display = (v === 'conducta' && canMail) ? 'flex' : 'none';
-  document.getElementById('kpi-strip').style.display = (v === 'conducta' && analisisData && !analisisData.vacio) ? 'flex' : 'none';
+  var showKpi = analisisData && !analisisData.vacio;
+  document.getElementById('kpi-strip').style.display = ((v === 'conducta' || v === 'detalle') && showKpi) ? 'flex' : 'none';
   cargarFiltros().then(function() {
     if (v === 'conducta') conducta();
     else if (v === 'detalle') detalle();
@@ -510,12 +511,12 @@ function renderKpiChart() {
   var ratios = evol.map(function(e) { return e.ratio_pc; });
   if (kpiChart) { kpiChart.destroy(); kpiChart = null; }
   kpiChart = new Chart(document.getElementById('kpi-chart'), {
-    type: 'line',
+    type: 'bar',
     data: {
       labels: labels,
       datasets: [
-        { label: '% Con Presc.', data: pcts, borderColor: '#1DBC61', backgroundColor: 'rgba(29,188,97,.08)', tension: 0.3, pointRadius: 3, pointBackgroundColor: '#1DBC61', yAxisID: 'y1' },
-        { label: 'Ratio P/C',    data: ratios, borderColor: '#47B0FE', backgroundColor: 'rgba(71,176,254,.08)', tension: 0.3, pointRadius: 3, pointBackgroundColor: '#47B0FE', yAxisID: 'y2' }
+        { type: 'bar',  label: '% Con Presc.', data: pcts,   backgroundColor: 'rgba(29,188,97,.65)', borderColor: '#1DBC61', borderWidth: 1, borderRadius: 3, yAxisID: 'y1', order: 2 },
+        { type: 'line', label: 'Ratio P/C',    data: ratios, borderColor: '#47B0FE', backgroundColor: 'transparent', tension: 0.35, pointRadius: 4, pointBackgroundColor: '#47B0FE', pointBorderColor: 'white', pointBorderWidth: 1.5, borderWidth: 2.5, yAxisID: 'y2', order: 1 }
       ]
     },
     options: {
@@ -523,8 +524,8 @@ function renderKpiChart() {
       plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, boxWidth: 10, padding: 6 } } },
       scales: {
         x:  { ticks: { font: { size: 9 } }, grid: { display: false } },
-        y1: { type: 'linear', position: 'left',  ticks: { font: { size: 9 } }, title: { display: false } },
-        y2: { type: 'linear', position: 'right', ticks: { font: { size: 9 } }, grid: { drawOnChartArea: false } }
+        y1: { type: 'linear', position: 'left',  ticks: { font: { size: 9 }, callback: function(v){ return v + '%'; } }, min: 0, grid: { color: 'rgba(0,0,0,.05)' } },
+        y2: { type: 'linear', position: 'right', ticks: { font: { size: 9 } }, min: 0, grid: { drawOnChartArea: false } }
       }
     }
   });
@@ -773,7 +774,13 @@ function genHtml() {
   var resRows = EKEYS.map(function(e,i){var m=d.resumen[e];return'<tr><td><b>'+ENMS[i]+'</b></td><td>'+m.consultas+'</td><td>'+m.con_presc+'</td><td>'+m.pct_con_presc+'%</td><td>'+m.total_presc+'</td><td>'+m.ratio_pc+'</td></tr>';}).join('');
   var svcRows = (d.por_servicio||[]).map(function(s){var m=s.esc1;return'<tr><td>'+s.servicio+'</td><td>'+m.consultas+'</td><td>'+m.con_presc+'</td><td>'+m.pct_con_presc+'%</td><td>'+m.total_presc+'</td><td>'+m.ratio_pc+'</td></tr>';}).join('');
   var profRows = (d.por_profesional||[]).map(function(p){var m=p.esc1;return'<tr><td>'+p.nombre_medico+'</td><td>'+(p.matricula||'')+'</td><td>'+(p.servicio||'')+'</td><td>'+m.consultas+'</td><td>'+m.pct_con_presc+'%</td><td>'+m.ratio_pc+'</td></tr>';}).join('');
-  return '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'+css+'</style></head><body><h1>🏥 Sanatorio de la Cañada — Conducta Prescriptiva</h1>'+filtrosH+'<h3>Resumen por escenario</h3><table><thead><tr><th>Escenario</th><th>Consultas</th><th>Con Presc.</th><th>% Con Presc.</th><th>Total Presc.</th><th>Ratio P/C</th></tr></thead><tbody>'+resRows+'</tbody></table><h3>Por servicio</h3><table><thead><tr><th>Servicio</th><th>Consultas</th><th>Con Presc.</th><th>%</th><th>Total Presc.</th><th>Ratio P/C</th></tr></thead><tbody>'+svcRows+'</tbody></table><h3>Por profesional</h3><table><thead><tr><th>Profesional</th><th>Matrícula</th><th>Servicio</th><th>Consultas</th><th>% Con Presc.</th><th>Ratio P/C</th></tr></thead><tbody>'+profRows+'</tbody></table><p style="font-size:11px;color:#888;margin-top:20px;border-top:1px solid #eee;padding-top:8px">Generado: '+new Date().toLocaleString('es-AR')+' — Sanatorio de la Cañada</p></body></html>';
+  var footer = '<div style="margin-top:30px;padding-top:16px;border-top:2px solid #1DBC61;font-size:11px;color:#555;line-height:1.7">'
+    + '<p><em>La información aquí disponible es confidencial, de uso interno y exclusiva de Sanatorio de la Cañada.</em></p>'
+    + '<p><em>Su acceso y utilización se encuentran destinados únicamente a fines profesionales e institucionales autorizados.</em></p>'
+    + '<p><em>Esta iniciativa forma parte de nuestro proceso de mejora continua, gestión basada en datos y desarrollo de herramientas inteligentes para la calidad asistencial.</em></p>'
+    + '<p style="margin-top:10px;font-weight:700;color:#1D8D6B">Sanatorio de la Cañada</p>'
+    + '</div>';
+  return '<!DOCTYPE html><html><head><meta charset="UTF-8"><style>'+css+'</style></head><body><h1>🏥 Sanatorio de la Cañada — Conducta Prescriptiva</h1>'+filtrosH+'<h3>Resumen por escenario</h3><table><thead><tr><th>Escenario</th><th>Consultas</th><th>Con Presc.</th><th>% Con Presc.</th><th>Total Presc.</th><th>Ratio P/C</th></tr></thead><tbody>'+resRows+'</tbody></table><h3>Por servicio</h3><table><thead><tr><th>Servicio</th><th>Consultas</th><th>Con Presc.</th><th>%</th><th>Total Presc.</th><th>Ratio P/C</th></tr></thead><tbody>'+svcRows+'</tbody></table><h3>Por profesional</h3><table><thead><tr><th>Profesional</th><th>Matrícula</th><th>Servicio</th><th>Consultas</th><th>% Con Presc.</th><th>Ratio P/C</th></tr></thead><tbody>'+profRows+'</tbody></table><p style="font-size:11px;color:#888;margin-top:20px;padding-bottom:8px">Generado: '+new Date().toLocaleString('es-AR')+'</p>'+footer+'</body></html>';
 }
 
 // EXPORTAR XLS
