@@ -221,7 +221,7 @@ tbody td{padding:8px 12px;color:var(--tx);white-space:nowrap}
     </div>
     <div class="fg"><label class="fl">Matrícula</label><input type="text" id="u-mat" class="fi" placeholder="Ej: 44037"></div>
     <div class="fg ff"><label class="fl">Centros habilitados (Ctrl+click para varios)</label><select id="u-centros" class="fi" multiple style="height:80px"></select></div>
-    <div class="fg ff" id="fg-svc" style="display:none"><label class="fl">Servicio asignado <span style="color:#C0392B">*</span></label><select id="u-svc" class="fi"><option value="">— Seleccioná un servicio —</option></select></div>
+    <div class="fg ff" id="fg-svc" style="display:none"><label class="fl">Servicios asignados <span style="color:#C0392B">*</span> <span style="font-size:10px;color:var(--ts)">(Ctrl+click para varios)</span></label><select id="u-svc" class="fi" multiple style="height:90px"></select></div>
     <div class="fg ff"><label class="fl">Mail para reportes</label><input type="email" id="u-mrep" class="fi" placeholder="Opcional"></div>
   </div>
   <div class="mdf">
@@ -722,8 +722,13 @@ function detalle() {
     + '</div>'
     + '<div id="detalle-body"><div class="emp"><div class="emp-i">🔎</div><div class="emp-t">Usá los filtros para buscar prescripciones</div></div></div>';
   // Init con preselección de filtros globales
+  var svcsDisp2 = fd.servicios || [];
+  if (user.rol === 'jefe_servicio' && user.servicio_nombre) {
+    var svcsJ2 = user.servicio_nombre.split(',').map(function(s){return s.trim();}).filter(Boolean);
+    svcsDisp2 = svcsDisp2.filter(function(s){ return svcsJ2.indexOf(s) >= 0; });
+  }
   initMs('ms-dcentros', (fd.centros || []).map(function(c) { return { v: String(c.id), l: c.nombre }; }), 'Todos los centros', preselCentros());
-  initMs('ms-dservicios', (fd.servicios || []).map(function(s) { return { v: s, l: s }; }), 'Todos los servicios', preselServicios());
+  initMs('ms-dservicios', svcsDisp2.map(function(s) { return { v: s, l: s }; }), svcsDisp2.length === 1 ? svcsDisp2[0] : 'Todos los servicios', preselServicios());
 }
 
 async function cargarDetalle(off) {
@@ -824,19 +829,33 @@ async function usuarios() {
   var r = await apiFetch('/usuarios/'); if (!r || !r.ok) return;
   var data = await r.json();
   var canC = ['admin','operaciones_medicas'].indexOf(user.rol) >= 0;
-  var rows = data.map(function(u) { return '<tr><td><strong>' + u.nombre + ' ' + u.apellido + '</strong></td><td>' + u.email + '</td><td><span class="rb rb-' + u.rol + '">' + rolLbl(u.rol) + '</span></td><td>' + (u.codigo_medico || '—') + '</td><td>' + ((u.centros || []).map(function(c) { return c.nombre; }).join(', ') || '—') + '</td><td><span class="bd ' + (u.activo ? 'bdv' : 'bdr') + '">' + (u.activo ? 'Activo' : 'Inactivo') + '</span></td>' + (canC ? '<td><button onclick="editarUsuario(' + u.id + ')" style="background:none;border:1.5px solid var(--bo);border-radius:5px;cursor:pointer;padding:3px 8px;font-size:11px">✏️</button></td>' : '') + '</tr>'; }).join('') || emptyRow(canC ? 7 : 6);
-  pc.innerHTML = (canC ? '<div style="display:flex;justify-content:flex-end;margin-bottom:12px"><button class="bp" onclick="nuevoUsuario()">➕ Nuevo usuario</button></div>' : '') + mkTable('tbl-usu', 'Usuarios', data.length + ' usuarios', ['Nombre','Email','Rol','Matrícula','Centros','Estado', canC ? 'Acciones' : ''], rows);
+  var rows = data.map(function(u) {
+    var centrosStr = (u.centros || []).map(function(c){return c.nombre;}).join(', ') || '—';
+    var centrosTrunc = centrosStr.length > 60 ? centrosStr.substring(0,60)+'…' : centrosStr;
+    var svcNom = u.servicio_nombre ? '<br><span style="font-size:10px;color:var(--vd)">📋 '+u.servicio_nombre+'</span>' : '';
+    return '<tr>'
+      + '<td><strong>' + u.nombre + ' ' + u.apellido + '</strong></td>'
+      + '<td style="font-size:11px">' + u.email + '</td>'
+      + '<td><span class="rb rb-' + u.rol + '">' + rolLbl(u.rol) + '</span>' + svcNom + '</td>'
+      + '<td>' + (u.codigo_medico || '—') + '</td>'
+      + '<td style="font-size:11px;max-width:200px;white-space:normal;line-height:1.4" title="' + centrosStr + '">' + centrosTrunc + '</td>'
+      + '<td><span class="bd ' + (u.activo ? 'bdv' : 'bdr') + '">' + (u.activo ? 'Activo' : 'Inactivo') + '</span></td>'
+      + (canC ? '<td><button onclick="editarUsuario(' + u.id + ')" style="background:none;border:1.5px solid var(--bo);border-radius:6px;cursor:pointer;padding:4px 10px;font-size:11px">✏️ Editar</button></td>' : '')
+      + '</tr>';
+  }).join('') || emptyRow(canC ? 7 : 6);
+  var addBtn = canC ? '<button class="bp" onclick="nuevoUsuario()" style="white-space:nowrap">➕ Nuevo usuario</button>' : '';
+  pc.innerHTML = mkTable('tbl-usu', 'Usuarios del sistema', data.length + ' registrados | ' + addBtn, ['Nombre','Email','Rol','Matrícula','Centros','Estado', canC ? '' : ''], rows);
 }
 function onRolChange(rol) {
   var fgSvc = document.getElementById('fg-svc');
   if (rol === 'jefe_servicio') {
     fgSvc.style.display = 'block';
-    // Populate service dropdown
     var ss = document.getElementById('u-svc');
-    var current = ss.value;
-    ss.innerHTML = '<option value="">— Seleccioná un servicio —</option>';
-    (fd.servicios || []).sort(function(a,b){return a.localeCompare(b,'es');}).forEach(function(s) {
-      ss.innerHTML += '<option value="' + s + '"' + (current === s ? ' selected' : '') + '>' + s + '</option>';
+    // Mantener seleccionados actuales
+    var currentVals = Array.from(ss.selectedOptions || []).map(function(o){return o.value;});
+    ss.innerHTML = '';
+    (fd.servicios || []).slice().sort(function(a,b){return a.localeCompare(b,'es');}).forEach(function(s) {
+      ss.innerHTML += '<option value="' + s + '"' + (currentVals.indexOf(s)>=0 ? ' selected' : '') + '>' + s + '</option>';
     });
   } else {
     fgSvc.style.display = 'none';
@@ -865,9 +884,10 @@ async function editarUsuario(uid) {
   if (u.rol === 'jefe_servicio') {
     var fgSvc = document.getElementById('fg-svc'); fgSvc.style.display = 'block';
     var ss = document.getElementById('u-svc');
-    ss.innerHTML = '<option value="">— Seleccioná un servicio —</option>';
-    (fd.servicios || []).sort(function(a,b){return a.localeCompare(b,'es');}).forEach(function(s) {
-      ss.innerHTML += '<option value="' + s + '"' + (u.servicio_nombre === s || u.servicio === s ? ' selected' : '') + '>' + s + '</option>';
+    var svcsActuales = (u.servicio_nombre || '').split(',').map(function(s){return s.trim();}).filter(Boolean);
+    ss.innerHTML = '';
+    (fd.servicios || []).slice().sort(function(a,b){return a.localeCompare(b,'es');}).forEach(function(s) {
+      ss.innerHTML += '<option value="' + s + '"' + (svcsActuales.indexOf(s) >= 0 ? ' selected' : '') + '>' + s + '</option>';
     });
   } else {
     document.getElementById('fg-svc').style.display = 'none';
@@ -890,10 +910,10 @@ async function bajaUsuario() {
 async function guardarUsuario() {
   var centrosIds = Array.from(document.getElementById('u-centros').selectedOptions).map(function(o) { return parseInt(o.value); }).filter(Boolean);
   var rolVal = document.getElementById('u-rol').value;
-  var svcVal = rolVal === 'jefe_servicio' ? (document.getElementById('u-svc').value || null) : null;
-  if (rolVal === 'jefe_servicio' && !svcVal && !editUid) { showToast('Seleccioná un servicio para el Jefe de Servicio', 'w'); return; }
-  // Al editar, si no se cambió el servicio, no lo enviamos (mantiene el existente)
-  if (rolVal === 'jefe_servicio' && !svcVal && editUid) { /* mantener servicio existente */ }
+  var svcSel = document.getElementById('u-svc');
+  var svcVals = rolVal === 'jefe_servicio' ? Array.from(svcSel.selectedOptions).map(function(o){return o.value;}).filter(Boolean) : [];
+  var svcVal = svcVals.length ? svcVals.join(',') : null;
+  if (rolVal === 'jefe_servicio' && !svcVal && !editUid) { showToast('Seleccioná al menos un servicio para el Jefe de Servicio', 'w'); return; }
   var payload = { nombre: document.getElementById('u-nom').value.trim(), apellido: document.getElementById('u-ape').value.trim(), email: document.getElementById('u-eml').value.trim(), rol: rolVal, codigo_medico: document.getElementById('u-mat').value.trim() || null, mail_reportes: document.getElementById('u-mrep').value.trim() || null, centros_ids: centrosIds };
   if (svcVal) payload.servicio_nombre = svcVal;
   var pwd = document.getElementById('u-pwd').value; if (pwd) payload.password = pwd;
