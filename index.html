@@ -891,8 +891,11 @@ async function guardarUsuario() {
   var centrosIds = Array.from(document.getElementById('u-centros').selectedOptions).map(function(o) { return parseInt(o.value); }).filter(Boolean);
   var rolVal = document.getElementById('u-rol').value;
   var svcVal = rolVal === 'jefe_servicio' ? (document.getElementById('u-svc').value || null) : null;
-  if (rolVal === 'jefe_servicio' && !svcVal) { showToast('Seleccioná un servicio para el Jefe de Servicio', 'w'); return; }
-  var payload = { nombre: document.getElementById('u-nom').value.trim(), apellido: document.getElementById('u-ape').value.trim(), email: document.getElementById('u-eml').value.trim(), rol: rolVal, codigo_medico: document.getElementById('u-mat').value.trim() || null, mail_reportes: document.getElementById('u-mrep').value.trim() || null, centros_ids: centrosIds, servicio_nombre: svcVal };
+  if (rolVal === 'jefe_servicio' && !svcVal && !editUid) { showToast('Seleccioná un servicio para el Jefe de Servicio', 'w'); return; }
+  // Al editar, si no se cambió el servicio, no lo enviamos (mantiene el existente)
+  if (rolVal === 'jefe_servicio' && !svcVal && editUid) { /* mantener servicio existente */ }
+  var payload = { nombre: document.getElementById('u-nom').value.trim(), apellido: document.getElementById('u-ape').value.trim(), email: document.getElementById('u-eml').value.trim(), rol: rolVal, codigo_medico: document.getElementById('u-mat').value.trim() || null, mail_reportes: document.getElementById('u-mrep').value.trim() || null, centros_ids: centrosIds };
+  if (svcVal) payload.servicio_nombre = svcVal;
   var pwd = document.getElementById('u-pwd').value; if (pwd) payload.password = pwd;
   if (!payload.nombre || !payload.email) { showToast('Completá nombre y email', 'w'); return; }
   var r;
