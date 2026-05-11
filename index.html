@@ -213,7 +213,7 @@ tbody td{padding:8px 12px;color:var(--tx);white-space:nowrap}
     <div class="fg ff"><label class="fl">Email</label><input type="email" id="u-eml" class="fi"></div>
     <div class="fg ff"><label class="fl">Contraseña <span style="font-size:10px;color:var(--ts)">(vacío = no cambiar)</span></label><div class="pw-wrap"><input type="password" id="u-pwd" class="fi" placeholder="Nueva contraseña"><button type="button" class="pw-eye" onclick="togglePwd('u-pwd',this)" title="Mostrar/ocultar">👁</button></div></div>
     <div class="fg"><label class="fl">Rol</label>
-      <select id="u-rol" class="fi">
+      <select id="u-rol" class="fi" onchange="onRolChange(this.value)">
         <option value="profesional">Profesional</option><option value="jefe_servicio">Jefe de Servicio</option>
         <option value="operaciones_medicas">Operaciones Médicas</option><option value="gerente">Gerente</option>
         <option value="directorio">Directorio</option><option value="admin">Admin</option>
@@ -221,6 +221,7 @@ tbody td{padding:8px 12px;color:var(--tx);white-space:nowrap}
     </div>
     <div class="fg"><label class="fl">Matrícula</label><input type="text" id="u-mat" class="fi" placeholder="Ej: 44037"></div>
     <div class="fg ff"><label class="fl">Centros habilitados (Ctrl+click para varios)</label><select id="u-centros" class="fi" multiple style="height:80px"></select></div>
+    <div class="fg ff" id="fg-svc" style="display:none"><label class="fl">Servicio asignado <span style="color:#C0392B">*</span></label><select id="u-svc" class="fi"><option value="">— Seleccioná un servicio —</option></select></div>
     <div class="fg ff"><label class="fl">Mail para reportes</label><input type="email" id="u-mrep" class="fi" placeholder="Opcional"></div>
   </div>
   <div class="mdf">
@@ -826,10 +827,27 @@ async function usuarios() {
   var rows = data.map(function(u) { return '<tr><td><strong>' + u.nombre + ' ' + u.apellido + '</strong></td><td>' + u.email + '</td><td><span class="rb rb-' + u.rol + '">' + rolLbl(u.rol) + '</span></td><td>' + (u.codigo_medico || '—') + '</td><td>' + ((u.centros || []).map(function(c) { return c.nombre; }).join(', ') || '—') + '</td><td><span class="bd ' + (u.activo ? 'bdv' : 'bdr') + '">' + (u.activo ? 'Activo' : 'Inactivo') + '</span></td>' + (canC ? '<td><button onclick="editarUsuario(' + u.id + ')" style="background:none;border:1.5px solid var(--bo);border-radius:5px;cursor:pointer;padding:3px 8px;font-size:11px">✏️</button></td>' : '') + '</tr>'; }).join('') || emptyRow(canC ? 7 : 6);
   pc.innerHTML = (canC ? '<div style="display:flex;justify-content:flex-end;margin-bottom:12px"><button class="bp" onclick="nuevoUsuario()">➕ Nuevo usuario</button></div>' : '') + mkTable('tbl-usu', 'Usuarios', data.length + ' usuarios', ['Nombre','Email','Rol','Matrícula','Centros','Estado', canC ? 'Acciones' : ''], rows);
 }
+function onRolChange(rol) {
+  var fgSvc = document.getElementById('fg-svc');
+  if (rol === 'jefe_servicio') {
+    fgSvc.style.display = 'block';
+    // Populate service dropdown
+    var ss = document.getElementById('u-svc');
+    var current = ss.value;
+    ss.innerHTML = '<option value="">— Seleccioná un servicio —</option>';
+    (fd.servicios || []).sort(function(a,b){return a.localeCompare(b,'es');}).forEach(function(s) {
+      ss.innerHTML += '<option value="' + s + '"' + (current === s ? ' selected' : '') + '>' + s + '</option>';
+    });
+  } else {
+    fgSvc.style.display = 'none';
+  }
+}
+
 function nuevoUsuario() {
   editUid = null; document.getElementById('mo-usu-t').textContent = 'Nuevo usuario'; document.getElementById('btn-usu-baja').style.display = 'none';
   ['u-nom','u-ape','u-eml','u-pwd','u-mat','u-mrep'].forEach(function(id) { document.getElementById(id).value = ''; });
   document.getElementById('u-rol').value = 'profesional';
+  document.getElementById('fg-svc').style.display = 'none';
   var sel = document.getElementById('u-centros'); sel.innerHTML = '';
   (fd.centros || []).forEach(function(c) { sel.innerHTML += '<option value="' + c.id + '">' + c.nombre + '</option>'; });
   mostrarModal('mo-usu');
@@ -843,6 +861,17 @@ async function editarUsuario(uid) {
   document.getElementById('u-eml').value = u.email || ''; document.getElementById('u-pwd').value = '';
   document.getElementById('u-mat').value = u.codigo_medico || ''; document.getElementById('u-mrep').value = u.mail_reportes || '';
   document.getElementById('u-rol').value = u.rol || 'profesional';
+  // Show/populate service selector if jefe_servicio
+  if (u.rol === 'jefe_servicio') {
+    var fgSvc = document.getElementById('fg-svc'); fgSvc.style.display = 'block';
+    var ss = document.getElementById('u-svc');
+    ss.innerHTML = '<option value="">— Seleccioná un servicio —</option>';
+    (fd.servicios || []).sort(function(a,b){return a.localeCompare(b,'es');}).forEach(function(s) {
+      ss.innerHTML += '<option value="' + s + '"' + (u.servicio_nombre === s || u.servicio === s ? ' selected' : '') + '>' + s + '</option>';
+    });
+  } else {
+    document.getElementById('fg-svc').style.display = 'none';
+  }
   var centrosActuales = (u.centros || []).map(function(c) { return c.id; });
   var sel = document.getElementById('u-centros'); sel.innerHTML = '';
   (fd.centros || []).forEach(function(c) { sel.innerHTML += '<option value="' + c.id + '"' + (centrosActuales.indexOf(c.id) >= 0 ? ' selected' : '') + '>' + c.nombre + '</option>'; });
@@ -860,7 +889,10 @@ async function bajaUsuario() {
 }
 async function guardarUsuario() {
   var centrosIds = Array.from(document.getElementById('u-centros').selectedOptions).map(function(o) { return parseInt(o.value); }).filter(Boolean);
-  var payload = { nombre: document.getElementById('u-nom').value.trim(), apellido: document.getElementById('u-ape').value.trim(), email: document.getElementById('u-eml').value.trim(), rol: document.getElementById('u-rol').value, codigo_medico: document.getElementById('u-mat').value.trim() || null, mail_reportes: document.getElementById('u-mrep').value.trim() || null, centros_ids: centrosIds };
+  var rolVal = document.getElementById('u-rol').value;
+  var svcVal = rolVal === 'jefe_servicio' ? (document.getElementById('u-svc').value || null) : null;
+  if (rolVal === 'jefe_servicio' && !svcVal) { showToast('Seleccioná un servicio para el Jefe de Servicio', 'w'); return; }
+  var payload = { nombre: document.getElementById('u-nom').value.trim(), apellido: document.getElementById('u-ape').value.trim(), email: document.getElementById('u-eml').value.trim(), rol: rolVal, codigo_medico: document.getElementById('u-mat').value.trim() || null, mail_reportes: document.getElementById('u-mrep').value.trim() || null, centros_ids: centrosIds, servicio_nombre: svcVal };
   var pwd = document.getElementById('u-pwd').value; if (pwd) payload.password = pwd;
   if (!payload.nombre || !payload.email) { showToast('Completá nombre y email', 'w'); return; }
   var r;
