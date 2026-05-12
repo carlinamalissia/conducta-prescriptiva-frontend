@@ -1156,80 +1156,93 @@ function ayuda() {
 
     // Acceso rápido
     + '<div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">'
-    + '<button class="bp" onclick="abrirWA()" style="background:linear-gradient(135deg,#25d366,#128c7e)">💬 Abrir WhatsApp</button>'
+    + '<button class="bp" onclick="abrirWA()" style="background:linear-gradient(135deg,#25d366,#128c7e)">💬 Mesa de ayuda WA</button>'
     + (canCfg ? '<button class="bc" onclick="abrirConfigWA()">⚙️ Configurar mensaje WA</button>' : '')
-    + (canCfg ? '<button class="bc" onclick="abrirMailMasivo()">📢 Enviar notificación a todos</button>' : '')
+    + (canCfg ? '<button class="bc" onclick="abrirMailMasivo()">📢 Mail a todos</button>' : '')
+    + (canCfg ? '<button class="bp" onclick="enviarWAMasivo()" style="background:linear-gradient(135deg,#25d366,#128c7e)">📲 WhatsApp a todos</button>' : '')
     + '</div>'
 
-    // Sección: ¿Qué es esto?
     + mkAyuda('📊 ¿Qué es el análisis de conducta prescriptiva?',
-      'Es una herramienta que relaciona las <strong>atenciones médicas</strong> con las <strong>prescripciones emitidas</strong>, '
-      + 'permitiendo evaluar cuántos pacientes atendidos recibieron una prescripción y en qué cantidad. '
-      + 'El indicador principal es el <strong>Ratio P/C</strong> (prescripciones por consulta).')
+      'Herramienta que relaciona las <strong>atenciones médicas</strong> con las <strong>prescripciones emitidas</strong>, '
+      + 'evaluando cuántos pacientes atendidos recibieron prescripción y en qué volumen. '
+      + 'El indicador central es el <strong>Ratio P/C</strong> (prescripciones por consulta). '
+      + 'Los datos se actualizan periódicamente desde los archivos de atenciones y prescripciones exportados del sistema operativo.')
 
-    // Sección: Escenarios
-    + mkAyuda('🔢 Los tres escenarios',
+    + mkAyuda('🔢 Los tres escenarios de análisis',
       '<table style="width:100%;border-collapse:collapse;font-size:12px">'
-      + '<tr style="background:var(--bg)"><th style="padding:8px;text-align:left;border-bottom:1px solid var(--bo)">Escenario</th><th style="padding:8px;text-align:left;border-bottom:1px solid var(--bo)">Descripción</th><th style="padding:8px;text-align:left;border-bottom:1px solid var(--bo)">Cuándo usarlo</th></tr>'
-      + '<tr><td style="padding:8px;border-bottom:1px solid var(--bo)"><strong>ESC 1 — Completo</strong></td><td style="padding:8px;border-bottom:1px solid var(--bo)">Todos los datos sin exclusiones</td><td style="padding:8px;border-bottom:1px solid var(--bo)">Visión general del período</td></tr>'
-      + '<tr style="background:var(--bg)"><td style="padding:8px;border-bottom:1px solid var(--bo)"><strong>ESC 2 — Sin PAMI</strong></td><td style="padding:8px;border-bottom:1px solid var(--bo)">Excluye atenciones de obra social PAMI</td><td style="padding:8px;border-bottom:1px solid var(--bo)">Análisis de cartilla propia</td></tr>'
-      + '<tr><td style="padding:8px"><strong>ESC 3 — Sin PAMI ni Lab</strong></td><td style="padding:8px">Excluye PAMI, Laboratorio y vacunaciones</td><td style="padding:8px">Análisis de conducta prescriptiva clínica pura</td></tr>'
+      + '<tr style="background:var(--bg)"><th style="padding:8px;text-align:left;border-bottom:1px solid var(--bo)">Escenario</th><th style="padding:8px;text-align:left;border-bottom:1px solid var(--bo)">Descripción</th><th style="padding:8px;text-align:left;border-bottom:1px solid var(--bo)">Para qué sirve</th></tr>'
+      + '<tr><td style="padding:8px;border-bottom:1px solid var(--bo)"><strong>ESC 1 — Completo</strong></td><td style="padding:8px;border-bottom:1px solid var(--bo)">Todos los datos sin exclusiones</td><td style="padding:8px;border-bottom:1px solid var(--bo)">Visión global. Incluye PAMI y laboratorio</td></tr>'
+      + '<tr style="background:var(--bg)"><td style="padding:8px;border-bottom:1px solid var(--bo)"><strong>ESC 2 — Sin PAMI</strong></td><td style="padding:8px;border-bottom:1px solid var(--bo)">Excluye atenciones de obra social PAMI</td><td style="padding:8px;border-bottom:1px solid var(--bo)">Análisis de cartilla propia sin PAMI</td></tr>'
+      + '<tr><td style="padding:8px"><strong>ESC 3 — Sin PAMI ni Lab ⭐</strong></td><td style="padding:8px">Excluye PAMI, Laboratorio y vacunaciones</td><td style="padding:8px">Conducta prescriptiva clínica pura. <strong>Vista por defecto</strong></td></tr>'
       + '</table>')
 
-    // Sección: Semáforos
-    + mkAyuda('🚦 Semáforos de evaluación',
-      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">'
-      + '<div><strong>Ratio P/C</strong> (prescripciones por consulta)<br>'
-      + '<span style="color:#C0392B">🔴 Menor a 0.5</span> — Muy baja prescripción<br>'
-      + '<span style="color:#E67E22">🟡 Entre 0.5 y 1.5</span> — Prescripción moderada<br>'
-      + '<span style="color:#1D8D6B">🟢 Mayor a 1.5</span> — Prescripción activa</div>'
-      + '<div><strong>% Con Prescripción</strong><br>'
-      + '<span style="color:#C0392B">🔴 Menor a 20%</span> — Mayoría sin prescripción<br>'
-      + '<span style="color:#E67E22">🟡 Entre 20% y 40%</span> — Nivel intermedio<br>'
-      + '<span style="color:#1D8D6B">🟢 Mayor a 40%</span> — Alta cobertura prescriptiva</div>'
+    + mkAyuda('🚦 Cómo leer los semáforos',
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:13px">'
+      + '<div style="padding:12px;background:var(--bg);border-radius:8px"><strong>Ratio P/C</strong> — prescripciones por consulta<br><br>'
+      + '<span style="color:#C0392B">🔴 &lt; 0.5</span> — Prescripción muy baja<br>'
+      + '<span style="color:#E67E22">🟡 0.5 – 1.5</span> — Prescripción moderada<br>'
+      + '<span style="color:#1D8D6B">🟢 ≥ 1.5</span> — Prescripción activa</div>'
+      + '<div style="padding:12px;background:var(--bg);border-radius:8px"><strong>% Con Prescripción</strong><br><br>'
+      + '<span style="color:#C0392B">🔴 &lt; 20%</span> — Mayoría sin prescripción<br>'
+      + '<span style="color:#E67E22">🟡 20% – 40%</span> — Nivel intermedio<br>'
+      + '<span style="color:#1D8D6B">🟢 ≥ 40%</span> — Alta cobertura prescriptiva</div>'
       + '</div>')
 
-    // Sección: Filtros
     + mkAyuda('🔍 Cómo usar los filtros',
-      '<ul style="padding-left:18px;line-height:2;font-size:13px">'
-      + '<li><strong>Período rápido:</strong> botones 1 mes / Trimestre / Semestre / Año para selección rápida</li>'
-      + '<li><strong>Desde / Hasta:</strong> rango personalizado en formato mes/año</li>'
-      + '<li><strong>Centros:</strong> click para abrir el selector, tildar uno o varios centros. Sin selección = todos</li>'
-      + '<li><strong>Servicios:</strong> igual que centros, multi-selección disponible</li>'
-      + '<li>Hacé click en <strong>Analizar</strong> para aplicar los filtros seleccionados</li>'
-      + '<li>Los filtros se mantienen al pasar a <strong>Detalle Prescripciones</strong></li>'
+      '<ul style="padding-left:18px;line-height:2.2;font-size:13px">'
+      + '<li><strong>Período rápido:</strong> botones 1 mes / Trimestre / Semestre / Año</li>'
+      + '<li><strong>Desde / Hasta:</strong> rango personalizado mes a mes</li>'
+      + '<li><strong>Centros:</strong> click para abrir, tildar los que querés comparar. Sin selección = todos los habilitados</li>'
+      + '<li><strong>Servicios:</strong> igual que centros. Los jefes de servicio solo ven los suyos</li>'
+      + '<li>Hacé click en <strong>🔍 Analizar</strong> para aplicar. Los filtros se mantienen en Detalle</li>'
       + '</ul>')
 
-    // Sección: Detalle y Frecuencia
     + mkAyuda('🔎 Detalle de Prescripciones',
-      '<ul style="padding-left:18px;line-height:2;font-size:13px">'
-      + '<li><strong>Ver detalle:</strong> muestra cada prescripción individual con fecha, paciente, práctica y obra social</li>'
-      + '<li><strong>Frecuencia por práctica:</strong> ranking de los códigos más prescriptos, con quiénes los prescriben</li>'
-      + '<li><strong>Búsqueda libre:</strong> escribí el nombre o código de una práctica para filtrar</li>'
-      + '<li>Usá el botón <strong>⬇ XLS</strong> en cualquier tabla para descargar los datos en Excel</li>'
+      '<ul style="padding-left:18px;line-height:2.2;font-size:13px">'
+      + '<li><strong>📋 Ver detalle:</strong> cada prescripción individual — fecha, paciente, código, práctica, obra social</li>'
+      + '<li><strong>📊 Frecuencia por práctica:</strong> ranking de los códigos más prescriptos y quiénes los prescriben</li>'
+      + '<li><strong>Búsqueda libre:</strong> nombre o código de práctica para filtrar en tiempo real</li>'
+      + '<li><strong>⬇ XLS:</strong> exportar cualquier tabla a Excel con un click</li>'
+      + '<li>Los filtros del análisis se mantienen automáticamente al cambiar de sección</li>'
       + '</ul>')
 
-    // Sección: Roles
-    + mkAyuda('👥 Roles de usuario',
+    + mkAyuda('📤 Carga de datos (Op. Médicas y Gerentes)',
+      '<ul style="padding-left:18px;line-height:2.2;font-size:13px">'
+      + '<li>Exportá desde el sistema operativo: <strong>atenciones</strong> (todos los centros juntos) y <strong>prescripciones</strong> (un archivo por centro)</li>'
+      + '<li>Ir a <strong>Cargar Datos → Cargar nuevo archivo</strong>, seleccionar tipo y centro</li>'
+      + '<li>Después de cargar, el sistema ofrece notificar a los usuarios por <strong>mail y WhatsApp</strong></li>'
+      + '<li>Podés eliminar cargas anteriores con el botón 🗑️ para reemplazar datos</li>'
+      + '</ul>')
+
+    + mkAyuda('👥 Roles y permisos',
       '<table style="width:100%;border-collapse:collapse;font-size:12px">'
-      + '<tr style="background:var(--bg)"><th style="padding:7px;text-align:left;border-bottom:1px solid var(--bo)">Rol</th><th style="padding:7px;text-align:left;border-bottom:1px solid var(--bo)">Acceso</th></tr>'
-      + '<tr><td style="padding:7px;border-bottom:1px solid var(--bo)"><span class="rb rb-admin">Admin</span></td><td style="padding:7px;border-bottom:1px solid var(--bo)">Acceso total. Gestión de usuarios y auditoría</td></tr>'
-      + '<tr style="background:var(--bg)"><td style="padding:7px;border-bottom:1px solid var(--bo)"><span class="rb rb-directorio">Directorio</span></td><td style="padding:7px;border-bottom:1px solid var(--bo)">Todos los datos, todos los centros. Solo lectura</td></tr>'
-      + '<tr><td style="padding:7px;border-bottom:1px solid var(--bo)"><span class="rb rb-gerente">Gerente</span></td><td style="padding:7px;border-bottom:1px solid var(--bo)">Sus centros asignados. Puede exportar y enviar mails</td></tr>'
-      + '<tr style="background:var(--bg)"><td style="padding:7px;border-bottom:1px solid var(--bo)"><span class="rb rb-operaciones_medicas">Op. Médicas</span></td><td style="padding:7px;border-bottom:1px solid var(--bo)">Sus centros. Puede cargar datos y gestionar usuarios</td></tr>'
-      + '<tr><td style="padding:7px;border-bottom:1px solid var(--bo)"><span class="rb rb-jefe_servicio">Jefe Servicio</span></td><td style="padding:7px;border-bottom:1px solid var(--bo)">Su centro y servicio asignado. Solo lectura</td></tr>'
-      + '<tr style="background:var(--bg)"><td style="padding:7px"><span class="rb rb-profesional">Profesional</span></td><td style="padding:7px">Solo sus propias prescripciones (por matrícula)</td></tr>'
+      + '<tr style="background:var(--bg)"><th style="padding:7px;text-align:left;border-bottom:1px solid var(--bo)">Rol</th><th style="padding:7px;text-align:left;border-bottom:1px solid var(--bo)">Qué puede hacer</th></tr>'
+      + '<tr><td style="padding:7px;border-bottom:1px solid var(--bo)"><span class="rb rb-admin">Admin</span></td><td style="padding:7px;border-bottom:1px solid var(--bo)">Todo. Usuarios, carga, auditoría, notificaciones</td></tr>'
+      + '<tr style="background:var(--bg)"><td style="padding:7px;border-bottom:1px solid var(--bo)"><span class="rb rb-directorio">Directorio</span></td><td style="padding:7px;border-bottom:1px solid var(--bo)">Consulta de todos los centros. Solo lectura</td></tr>'
+      + '<tr><td style="padding:7px;border-bottom:1px solid var(--bo)"><span class="rb rb-gerente">Gerente</span></td><td style="padding:7px;border-bottom:1px solid var(--bo)">Sus centros. Carga datos, exporta y envía mails</td></tr>'
+      + '<tr style="background:var(--bg)"><td style="padding:7px;border-bottom:1px solid var(--bo)"><span class="rb rb-operaciones_medicas">Op. Médicas</span></td><td style="padding:7px;border-bottom:1px solid var(--bo)">Sus centros. Carga datos, gestiona usuarios de su equipo</td></tr>'
+      + '<tr><td style="padding:7px;border-bottom:1px solid var(--bo)"><span class="rb rb-jefe_servicio">Jefe Servicio</span></td><td style="padding:7px;border-bottom:1px solid var(--bo)">Solo su servicio asignado. Solo lectura</td></tr>'
+      + '<tr style="background:var(--bg)"><td style="padding:7px"><span class="rb rb-profesional">Profesional</span></td><td style="padding:7px">Solo sus propias prescripciones (identificado por matrícula)</td></tr>'
       + '</table>')
 
-    // Sección: Metodología
-    + mkAyuda('⚙️ Metodología del análisis',
-      '<ul style="padding-left:18px;line-height:2;font-size:13px">'
-      + '<li>El <strong>join</strong> entre atenciones y prescripciones se realiza por: Paciente + Médico + Fecha</li>'
-      + '<li>Una consulta se cuenta como <strong>"con prescripción"</strong> si tiene al menos una práctica asociada</li>'
-      + '<li>Las <strong>fibroscopías</strong> se desglosan por especialidad: Gastro, ORL, Neumo, Urológica</li>'
-      + '<li>El <strong>Laboratorio</strong> se excluye en ESC 3 para analizar conducta prescriptiva clínica</li>'
-      + '<li>Los datos se actualizan al cargar nuevos archivos en <strong>Cargar Datos</strong></li>'
+    + mkAyuda('🔑 Mi cuenta',
+      '<ul style="padding-left:18px;line-height:2.2;font-size:13px">'
+      + '<li><strong>Cambiar contraseña:</strong> click en tu nombre en la barra lateral → 🔑 Cambiar contraseña</li>'
+      + '<li><strong>Recuperar contraseña:</strong> en la pantalla de login → "¿Olvidé mi contraseña?" — llegará un mail con el link</li>'
+      + '<li>El link de recuperación es válido por <strong>2 horas</strong></li>'
       + '</ul>')
+
+    + mkAyuda('⚙️ Metodología',
+      '<ul style="padding-left:18px;line-height:2.2;font-size:13px">'
+      + '<li>Join entre atenciones y prescripciones por: <strong>Paciente + Médico + Fecha</strong></li>'
+      + '<li>Una consulta cuenta como "con prescripción" si tiene al menos una práctica asociada</li>'
+      + '<li>Fibroscopías diferenciadas por especialidad: Gastro, ORL, Neumo, Urológica</li>'
+      + '<li>ESC 3 excluye Laboratorio y vacunaciones para aislar conducta prescriptiva clínica</li>'
+      + '</ul>')
+
+    + '<div style="background:linear-gradient(135deg,rgba(29,141,107,.08),rgba(29,188,97,.05));border:1px solid rgba(29,141,107,.2);border-radius:var(--ra);padding:16px 18px;font-size:12px;color:var(--ts);line-height:1.8">'
+    + '<strong style="color:var(--vd)">¿Necesitás ayuda?</strong> Usá el botón 💬 de WhatsApp en la barra lateral para contactar a la mesa de soporte.'
+    + '</div>'
 
     + '</div>';
 }
