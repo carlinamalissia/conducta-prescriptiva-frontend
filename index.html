@@ -370,6 +370,8 @@ function mostrarRecuperarPass() {
   document.getElementById('forgot-email').value = '';
   var msg = document.getElementById('forgot-msg');
   msg.style.display = 'none'; msg.textContent = '';
+  var btn = document.getElementById('btn-forgot');
+  if (btn) { btn.disabled = false; btn.textContent = 'Enviar enlace'; }
   mostrarModal('mo-forgot');
 }
 
@@ -391,6 +393,15 @@ async function enviarRecuperacion() {
     msg.textContent = 'Error al enviar. Intentá de nuevo.'; msg.style.color = '#C0392B'; msg.style.display = 'block';
     btn.disabled = false; btn.textContent = 'Enviar enlace';
   }
+  // Re-habilitar botón después de 5 segundos por si quiere reintentar
+  setTimeout(function() {
+    var b = document.getElementById('btn-forgot');
+    if (b && b.textContent === '✅ Enviado') {
+      b.disabled = false; b.textContent = 'Enviar enlace';
+      var m = document.getElementById('forgot-msg');
+      if (m) m.style.display = 'none';
+    }
+  }, 5000);
 }
 
 // Reset password desde el link del mail (token en URL)
