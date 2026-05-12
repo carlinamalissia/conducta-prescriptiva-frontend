@@ -222,7 +222,8 @@ tbody td{padding:8px 12px;color:var(--tx);white-space:nowrap}
     <div class="fg"><label class="fl">Matrícula</label><input type="text" id="u-mat" class="fi" placeholder="Ej: 44037"></div>
     <div class="fg ff"><label class="fl">Centros habilitados (Ctrl+click para varios)</label><select id="u-centros" class="fi" multiple style="height:80px"></select></div>
     <div class="fg ff" id="fg-svc" style="display:none"><label class="fl">Servicios asignados <span style="color:#C0392B">*</span> <span style="font-size:10px;color:var(--ts)">(Ctrl+click para varios)</span></label><select id="u-svc" class="fi" multiple style="height:90px"></select></div>
-    <div class="fg ff"><label class="fl">Mail para reportes</label><input type="email" id="u-mrep" class="fi" placeholder="Opcional"></div>
+    <div class="fg"><label class="fl">WhatsApp <span style="font-size:10px;color:var(--ts)">(sin +, con código país)</span></label><input type="text" id="u-wa" class="fi" placeholder="5493512345678"></div>
+    <div class="fg"><label class="fl">Mail para reportes</label><input type="email" id="u-mrep" class="fi" placeholder="Opcional"></div>
   </div>
   <div class="mdf">
     <button class="bc" onclick="cerrarModal('mo-usu')">Cancelar</button>
@@ -722,13 +723,9 @@ function detalle() {
     + '</div>'
     + '<div id="detalle-body"><div class="emp"><div class="emp-i">🔎</div><div class="emp-t">Usá los filtros para buscar prescripciones</div></div></div>';
   // Init con preselección de filtros globales
-  var svcsDisp2 = fd.servicios || [];
-  if (user.rol === 'jefe_servicio' && user.servicio_nombre) {
-    var svcsJ2 = user.servicio_nombre.split(',').map(function(s){return s.trim();}).filter(Boolean);
-    svcsDisp2 = svcsDisp2.filter(function(s){ return svcsJ2.indexOf(s) >= 0; });
-  }
+  var svcsDisp3 = fd.servicios || [];
   initMs('ms-dcentros', (fd.centros || []).map(function(c) { return { v: String(c.id), l: c.nombre }; }), 'Todos los centros', preselCentros());
-  initMs('ms-dservicios', svcsDisp2.map(function(s) { return { v: s, l: s }; }), svcsDisp2.length === 1 ? svcsDisp2[0] : 'Todos los servicios', preselServicios());
+  initMs('ms-dservicios', svcsDisp3.map(function(s) { return { v: s, l: s }; }), svcsDisp3.length === 1 ? svcsDisp3[0] : 'Todos los servicios', preselServicios());
 }
 
 async function cargarDetalle(off) {
@@ -835,7 +832,7 @@ async function usuarios() {
     var svcNom = u.servicio_nombre ? '<br><span style="font-size:10px;color:var(--vd)">📋 '+u.servicio_nombre+'</span>' : '';
     return '<tr>'
       + '<td><strong>' + u.nombre + ' ' + u.apellido + '</strong></td>'
-      + '<td style="font-size:11px">' + u.email + '</td>'
+      + '<td style="font-size:11px">' + u.email + (u.whatsapp ? '<br><span style="color:#25d366;font-size:10px">📱 +' + u.whatsapp + '</span>' : '') + '</td>'
       + '<td><span class="rb rb-' + u.rol + '">' + rolLbl(u.rol) + '</span>' + svcNom + '</td>'
       + '<td>' + (u.codigo_medico || '—') + '</td>'
       + '<td style="font-size:11px;max-width:200px;white-space:normal;line-height:1.4" title="' + centrosStr + '">' + centrosTrunc + '</td>'
@@ -864,7 +861,7 @@ function onRolChange(rol) {
 
 function nuevoUsuario() {
   editUid = null; document.getElementById('mo-usu-t').textContent = 'Nuevo usuario'; document.getElementById('btn-usu-baja').style.display = 'none';
-  ['u-nom','u-ape','u-eml','u-pwd','u-mat','u-mrep'].forEach(function(id) { document.getElementById(id).value = ''; });
+  ['u-nom','u-ape','u-eml','u-pwd','u-mat','u-mrep','u-wa'].forEach(function(id) { document.getElementById(id).value = ''; });
   document.getElementById('u-rol').value = 'profesional';
   document.getElementById('fg-svc').style.display = 'none';
   var sel = document.getElementById('u-centros'); sel.innerHTML = '';
@@ -878,7 +875,7 @@ async function editarUsuario(uid) {
   document.getElementById('btn-usu-baja').style.display = u.activo ? 'block' : 'none';
   document.getElementById('u-nom').value = u.nombre || ''; document.getElementById('u-ape').value = u.apellido || '';
   document.getElementById('u-eml').value = u.email || ''; document.getElementById('u-pwd').value = '';
-  document.getElementById('u-mat').value = u.codigo_medico || ''; document.getElementById('u-mrep').value = u.mail_reportes || '';
+  document.getElementById('u-mat').value = u.codigo_medico || ''; document.getElementById('u-mrep').value = u.mail_reportes || ''; document.getElementById('u-wa').value = u.whatsapp || '';
   document.getElementById('u-rol').value = u.rol || 'profesional';
   // Show/populate service selector if jefe_servicio
   if (u.rol === 'jefe_servicio') {
@@ -914,7 +911,7 @@ async function guardarUsuario() {
   var svcVals = rolVal === 'jefe_servicio' ? Array.from(svcSel.selectedOptions).map(function(o){return o.value;}).filter(Boolean) : [];
   var svcVal = svcVals.length ? svcVals.join(',') : null;
   if (rolVal === 'jefe_servicio' && !svcVal && !editUid) { showToast('Seleccioná al menos un servicio para el Jefe de Servicio', 'w'); return; }
-  var payload = { nombre: document.getElementById('u-nom').value.trim(), apellido: document.getElementById('u-ape').value.trim(), email: document.getElementById('u-eml').value.trim(), rol: rolVal, codigo_medico: document.getElementById('u-mat').value.trim() || null, mail_reportes: document.getElementById('u-mrep').value.trim() || null, centros_ids: centrosIds };
+  var payload = { nombre: document.getElementById('u-nom').value.trim(), apellido: document.getElementById('u-ape').value.trim(), email: document.getElementById('u-eml').value.trim(), rol: rolVal, codigo_medico: document.getElementById('u-mat').value.trim() || null, mail_reportes: document.getElementById('u-mrep').value.trim() || null, whatsapp: document.getElementById('u-wa').value.trim() || null, centros_ids: centrosIds };
   if (svcVal) payload.servicio_nombre = svcVal;
   var pwd = document.getElementById('u-pwd').value; if (pwd) payload.password = pwd;
   if (!payload.nombre || !payload.email) { showToast('Completá nombre y email', 'w'); return; }
@@ -1009,6 +1006,20 @@ function initSort() {
 }
 
 
+
+// ─── WHATSAPP MASIVO ─────────────────────────────────────────────────────────
+async function enviarWAMasivo() {
+  if (!confirm('¿Enviar WhatsApp de actualización a todos los usuarios con número registrado?\n\nSe usará la plantilla aprobada "actualizacion_de_datos_conducta_prescriptiva" con el nombre de cada profesional.')) return;
+  showToast('Enviando WhatsApp...', '');
+  var r = await apiFetch('/mail/whatsapp-masivo', { method: 'POST', body: JSON.stringify({}) });
+  if (r && r.ok) {
+    var d = await r.json();
+    showToast('✅ WhatsApp enviado a ' + d.enviados + ' usuarios' + (d.errores && d.errores.length ? ' (' + d.errores.length + ' errores)' : ''), 's');
+  } else {
+    var e = {}; try { e = await r.json(); } catch(ex) {}
+    showToast('Error: ' + (e.detail || 'No se pudo enviar'), 'e');
+  }
+}
 // ─── CONFIGURACIÓN Y WA ────────────────────────────────────────────────────
 var appCfg = { wa_mensaje: 'Hola! quiero hacer una consulta sobre el uso de la app de Conducta Prescriptiva', wa_numero: '5493517670798' };
 
@@ -1065,6 +1076,10 @@ async function confirmarMasivo() {
     var d = await r.json();
     showToast('✅ Mail enviado a ' + d.enviado_a + ' usuarios', 's');
     cerrarModal('mo-masivo');
+    // Ofrecer también WA
+    setTimeout(function(){
+      if(confirm('¿También enviás WhatsApp a los usuarios con número registrado?')) enviarWAMasivo();
+    }, 600);
   } else {
     var e = await r.json(); showToast((e && e.detail) || 'Error', 'e');
   }
