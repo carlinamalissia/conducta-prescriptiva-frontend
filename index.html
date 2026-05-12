@@ -166,7 +166,12 @@ tbody td{padding:8px 12px;color:var(--tx);white-space:nowrap}
 <div id="app">
   <nav class="sb">
     <div class="sbh"><div class="sbl"><div class="sbli">🏥</div><div class="sblt"><h2>Sanatorio de la Cañada</h2><p>Conducta Prescriptiva</p></div></div></div>
-    <div class="sbu"><div class="sbun" id="sb-nombre">—</div><div class="sbur" id="sb-email">—</div><span class="rb" id="sb-rol">—</span></div>
+    <div class="sbu">
+      <div class="sbun" id="sb-nombre">—</div>
+      <div class="sbur" id="sb-email">—</div>
+      <span class="rb" id="sb-rol">—</span>
+      <button onclick="abrirCambiarPass()" style="margin-top:8px;background:rgba(255,255,255,.08);border:none;color:rgba(255,255,255,.6);font-size:11px;cursor:pointer;padding:4px 8px;border-radius:6px;width:100%;text-align:left">🔑 Cambiar contraseña</button>
+    </div>
     <nav class="sbn" id="sbn"></nav>
     <div class="sbf">
       <button class="blo" id="btn-wa" onclick="abrirWA()" style="background:rgba(37,211,102,.12);color:rgba(180,255,200,.85);margin-bottom:6px">💬 Ayuda por WhatsApp</button>
@@ -251,6 +256,17 @@ tbody td{padding:8px 12px;color:var(--tx);white-space:nowrap}
   <div class="mdf"><button class="bc" onclick="cerrarModal('mo-up')">Cancelar</button><button class="bp" onclick="subirArchivo()">⬆️ Procesar</button></div>
 </div></div>
 
+<!-- MODAL CAMBIAR CONTRASEÑA -->
+<div class="mo" id="mo-cambiar-pass"><div class="md" style="max-width:400px">
+  <div class="mdt">🔑 Cambiar contraseña</div>
+  <div class="mds">Ingresá tu contraseña actual y la nueva</div>
+  <div class="fg"><label class="fl">Contraseña actual</label><div class="pw-wrap"><input type="password" id="cp-actual" class="fi" placeholder="Contraseña actual"><button type="button" class="pw-eye" onclick="togglePwd('cp-actual',this)">👁</button></div></div>
+  <div class="fg"><label class="fl">Nueva contraseña</label><div class="pw-wrap"><input type="password" id="cp-nueva" class="fi" placeholder="Mínimo 8 caracteres"><button type="button" class="pw-eye" onclick="togglePwd('cp-nueva',this)">👁</button></div></div>
+  <div class="fg"><label class="fl">Repetir nueva contraseña</label><div class="pw-wrap"><input type="password" id="cp-nueva2" class="fi" placeholder="Repetir contraseña"><button type="button" class="pw-eye" onclick="togglePwd('cp-nueva2',this)">👁</button></div></div>
+  <div id="cp-msg" style="font-size:12px;margin-top:6px;display:none"></div>
+  <div class="mdf"><button class="bc" onclick="cerrarModal('mo-cambiar-pass')">Cancelar</button><button class="bp" onclick="confirmarCambioPass()">Guardar contraseña</button></div>
+</div></div>
+
 <!-- MODAL CONFIRMAR -->
 <div class="mo" id="mo-conf"><div class="md" style="max-width:380px">
   <div class="mdt">⚠️ Confirmar</div>
@@ -309,6 +325,37 @@ var filtrosGlobales = { desde: '', hasta: '', centros: '', servicios: '' };
 window.onload = function() { if (token && user) showApp(); };
 
 
+
+// ─── CAMBIAR CONTRASEÑA ───────────────────────────────────────────────────────
+function abrirCambiarPass() {
+  document.getElementById('cp-actual').value = '';
+  document.getElementById('cp-nueva').value = '';
+  document.getElementById('cp-nueva2').value = '';
+  var msg = document.getElementById('cp-msg');
+  msg.style.display = 'none'; msg.textContent = '';
+  mostrarModal('mo-cambiar-pass');
+}
+
+async function confirmarCambioPass() {
+  var actual = document.getElementById('cp-actual').value;
+  var nueva  = document.getElementById('cp-nueva').value;
+  var nueva2 = document.getElementById('cp-nueva2').value;
+  var msg    = document.getElementById('cp-msg');
+  if (!actual) { msg.textContent = 'Ingresá tu contraseña actual'; msg.style.color='#C0392B'; msg.style.display='block'; return; }
+  if (nueva.length < 8) { msg.textContent = 'La nueva contraseña debe tener al menos 8 caracteres'; msg.style.color='#C0392B'; msg.style.display='block'; return; }
+  if (nueva !== nueva2) { msg.textContent = 'Las contraseñas no coinciden'; msg.style.color='#C0392B'; msg.style.display='block'; return; }
+  var r = await apiFetch('/auth/cambiar-password', {
+    method: 'POST',
+    body: JSON.stringify({ password_actual: actual, password_nueva: nueva })
+  });
+  var d = {}; try { d = await r.json(); } catch(e) {}
+  if (r && r.ok) {
+    msg.textContent = '✅ Contraseña actualizada correctamente'; msg.style.color='#1D8D6B'; msg.style.display='block';
+    setTimeout(function() { cerrarModal('mo-cambiar-pass'); }, 1800);
+  } else {
+    msg.textContent = d.detail || 'Error al cambiar la contraseña'; msg.style.color='#C0392B'; msg.style.display='block';
+  }
+}
 // ─── PASSWORD TOGGLE ────────────────────────────────────────────────────────
 function togglePwd(id, btn) {
   var inp = document.getElementById(id);
@@ -422,7 +469,7 @@ function buildNav() {
   var its = [
     { id:'conducta', icon:'📊', lbl:'Análisis Prescriptivo', roles:['admin','directorio','gerente','operaciones_medicas','jefe_servicio','profesional'] },
     { id:'detalle',  icon:'🔎', lbl:'Detalle Prescripciones', roles:['admin','directorio','gerente','operaciones_medicas','jefe_servicio','profesional'] },
-    { id:'uploads',  icon:'📤', lbl:'Cargar Datos', roles:['admin','directorio','gerente','operaciones_medicas'] },
+    { id:'uploads',  icon:'📤', lbl:'Cargar Datos', roles:['admin','gerente','operaciones_medicas'] },
     { id:'usuarios', icon:'👥', lbl:'Usuarios', roles:['admin','operaciones_medicas'] },
     { id:'auditoria',icon:'🔍', lbl:'Auditoría', roles:['admin'] },
     { id:'ayuda',    icon:'❓', lbl:'Ayuda',     roles:['admin','directorio','gerente','operaciones_medicas','jefe_servicio','profesional'] }
@@ -925,11 +972,27 @@ async function guardarUsuario() {
 // AUDITORÍA
 async function auditoria() {
   var pc = document.getElementById('pc'); pc.innerHTML = '<div class="sp"><div class="spi"></div>Cargando...</div>';
-  var r = await apiFetch('/audit/?limit=100'); if (!r || !r.ok) return;
+  var r = await apiFetch('/audit/?limit=200'); if (!r || !r.ok) return;
   var data = await r.json();
-  var bm = { login:'bdv', upload:'bda', alta_usuario:'bdv', baja_usuario:'bdr', consulta_dashboard:'bdc', descarga:'bdp', envio_mail:'bda', delete_upload:'bdr' };
-  var rows = data.map(function(l) { return '<tr><td>' + (l.created_at ? new Date(l.created_at).toLocaleString('es-AR') : '—') + '</td><td style="font-size:11px">' + (l.usuario_nombre || '—') + '<br><span style="color:var(--ts)">' + (l.usuario_email || '') + '</span></td><td><span class="bd ' + (bm[l.accion] || 'bdc') + '">' + l.accion + '</span></td><td>' + (l.recurso || '—') + '</td><td>' + (l.ip || '—') + '</td></tr>'; }).join('') || emptyRow(5);
-  pc.innerHTML = mkTable('tbl-audit', 'Log de auditoría', 'Últimas ' + data.length, ['Fecha/Hora','Usuario','Acción','Recurso','IP'], rows);
+  var bm = { login:'bdv', login_fallido:'bdr', upload:'bda', alta_usuario:'bdv', baja_usuario:'bdr', consulta_dashboard:'bdc', descarga:'bdp', envio_mail:'bda', delete_upload:'bdr', reset_password:'bdo', wa_masivo:'bdp', mail_masivo:'bda' };
+  // Separar fallidos del resto
+  var fallidos = data.filter(function(l){ return l.accion === 'login_fallido'; });
+  var resto    = data.filter(function(l){ return l.accion !== 'login_fallido'; });
+  var rowsMain = resto.map(function(l) {
+    return '<tr><td>' + (l.created_at ? new Date(l.created_at).toLocaleString('es-AR') : '—') + '</td>'
+      + '<td style="font-size:11px">' + (l.usuario_nombre || '—') + '<br><span style="color:var(--ts)">' + (l.usuario_email || '') + '</span></td>'
+      + '<td><span class="bd ' + (bm[l.accion] || 'bdc') + '">' + l.accion + '</span></td>'
+      + '<td>' + (l.recurso || '—') + '</td><td>' + (l.ip || '—') + '</td></tr>';
+  }).join('') || emptyRow(5);
+  var rowsFail = fallidos.map(function(l) {
+    var emailUsado = (l.detalle && l.detalle.email) ? l.detalle.email : '—';
+    return '<tr style="background:#FFF5F5"><td>' + (l.created_at ? new Date(l.created_at).toLocaleString('es-AR') : '—') + '</td>'
+      + '<td style="font-size:11px;color:#C0392B"><strong>' + emailUsado + '</strong></td>'
+      + '<td><span class="bd bdr">login fallido</span></td>'
+      + '<td>—</td><td>' + (l.ip || '—') + '</td></tr>';
+  }).join('') || '<tr><td colspan="5" style="text-align:center;padding:16px;color:var(--ts)">Sin intentos fallidos 🟢</td></tr>';
+  pc.innerHTML = mkTable('tbl-audit', 'Log de actividad', (data.length - fallidos.length) + ' eventos', ['Fecha/Hora','Usuario','Acción','Recurso','IP'], rowsMain)
+    + mkTable('tbl-fallidos', '⚠️ Intentos de login fallidos', fallidos.length + ' intentos', ['Fecha/Hora','Email utilizado','Estado','Detalle','IP'], rowsFail);
 }
 
 // MAIL
